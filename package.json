@@ -21,7 +21,9 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "npm run dev --prefix legacy_source",
+    "dev:web": "npm run dev --prefix legacy_source",
+    "dev:mobile": "expo start"
   },
   "private": true,
   "expo": {
