@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { HomeScreen } from './src/screens/HomeScreen';
-import { GameScreen } from './src/screens/GameScreen';
+import { BattleRoyaleScreen } from './src/screens/BattleRoyaleScreen';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('home');
@@ -26,7 +26,7 @@ export default function App() {
       {currentScreen === 'home' ? (
         <HomeScreen onStartGame={() => setCurrentScreen('game')} />
       ) : (
-        <GameScreen onBackToMenu={() => setCurrentScreen('home')} />
+        <BattleRoyaleScreen onBackToMenu={() => setCurrentScreen('home')} />
       )}
     </View>
   );
