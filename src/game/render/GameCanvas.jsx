@@ -1,10 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
   StyleSheet,
   Pressable,
-  GestureResponderEvent,
-  LayoutChangeEvent,
 } from 'react-native';
 import {
   Canvas,
@@ -19,18 +16,13 @@ import { gameWorld } from '../core/GameWorld';
 import { useGameStore } from '../../store/useGameStore';
 import { PLANTS_CONFIG } from '../config/plants.config';
 
-interface Props {
-  width: number;
-  height: number;
-}
-
-export const GameCanvas: React.FC<Props> = ({ width, height }) => {
+export const GameCanvas = ({ width, height }) => {
   const [, setFrameTick] = useState(0);
   const selectedSeed = useGameStore((s) => s.selectedSeed);
   const isShovelActive = useGameStore((s) => s.isShovelActive);
   const toggleShovel = useGameStore((s) => s.toggleShovel);
 
-  // Load zombie textures
+  // Load zombie and background textures
   const imgZombieNormal = useImage(require('../../../assets/game/zombie_normal.png'));
   const imgZombieCone = useImage(require('../../../assets/game/zombie_cone.png'));
   const imgZombieBucket = useImage(require('../../../assets/game/zombie_bucket.png'));
@@ -38,7 +30,7 @@ export const GameCanvas: React.FC<Props> = ({ width, height }) => {
   const imgZombieStrong = useImage(require('../../../assets/game/zombie_strong.png'));
   const imgLawnBg = useImage(require('../../../assets/game/lawn_bg.jpg'));
 
-  const zombieImages: Record<string, any> = {
+  const zombieImages = {
     normal: imgZombieNormal,
     cone: imgZombieCone,
     bucket: imgZombieBucket,
@@ -46,9 +38,8 @@ export const GameCanvas: React.FC<Props> = ({ width, height }) => {
     strong: imgZombieStrong,
   };
 
-  // Game loop using requestAnimationFrame
   const lastTimeRef = useRef(Date.now());
-  const animFrameRef = useRef<number | null>(null);
+  const animFrameRef = useRef(null);
 
   useEffect(() => {
     gameWorld.init();
@@ -73,11 +64,10 @@ export const GameCanvas: React.FC<Props> = ({ width, height }) => {
     };
   }, []);
 
-  // Scale factor between screen pixels and virtual board (900x500)
   const scaleX = width / GRID_CONFIG.BOARD_WIDTH;
   const scaleY = height / GRID_CONFIG.BOARD_HEIGHT;
 
-  const handleTouch = (e: GestureResponderEvent) => {
+  const handleTouch = (e) => {
     const { locationX, locationY } = e.nativeEvent;
     const virtualX = locationX / scaleX;
     const virtualY = locationY / scaleY;
@@ -125,7 +115,7 @@ export const GameCanvas: React.FC<Props> = ({ width, height }) => {
 
         {/* Scaled Game Content */}
         <Group transform={[{ scaleX }, { scaleY }]}>
-          {/* Lawn Grid Lines (Alternating check patterns) */}
+          {/* Lawn Grid */}
           {Array.from({ length: GRID_CONFIG.ROWS }).map((_, r) =>
             Array.from({ length: GRID_CONFIG.COLS }).map((__, c) => {
               const isEven = (r + c) % 2 === 0;
@@ -162,7 +152,6 @@ export const GameCanvas: React.FC<Props> = ({ width, height }) => {
 
           {/* Plants */}
           {gameWorld.plants.map((plant) => {
-            const cfg = PLANTS_CONFIG[plant.type];
             const hpRatio = Math.max(0, plant.health / plant.maxHealth);
 
             return (
@@ -175,7 +164,7 @@ export const GameCanvas: React.FC<Props> = ({ width, height }) => {
                   color="rgba(0,0,0,0.25)"
                 />
 
-                {/* Plant Character Styling */}
+                {/* Plant Shapes */}
                 {plant.type === 'sunflower' && (
                   <Group>
                     <Circle cx={plant.x} cy={plant.y} r={24} color="#fbc02d" />
@@ -259,7 +248,7 @@ export const GameCanvas: React.FC<Props> = ({ width, height }) => {
                   </Group>
                 )}
 
-                {/* Health Bar (if damaged) */}
+                {/* Health Bar */}
                 {hpRatio < 1 && (
                   <Group>
                     <Rect
@@ -354,7 +343,6 @@ export const GameCanvas: React.FC<Props> = ({ width, height }) => {
           {/* Suns */}
           {gameWorld.suns.map((sun) => (
             <Group key={sun.id}>
-              {/* Sun Glow */}
               <Circle
                 cx={sun.x}
                 cy={sun.y}

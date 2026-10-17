@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, Text, StyleSheet, View } from 'react-native';
-import { PlantType } from '../../types/plant.types';
 import { PLANTS_CONFIG } from '../../game/config/plants.config';
 import { useGameStore } from '../../store/useGameStore';
 
-interface Props {
-  type: PlantType;
-}
-
-export const SeedPacket: React.FC<Props> = ({ type }) => {
-  const config = PLANTS_CONFIG[type];
+export const SeedPacket = ({ type }) => {
+  const config = PLANTS_CONFIG[type] || {};
   const sun = useGameStore((s) => s.sun);
   const selectedSeed = useGameStore((s) => s.selectedSeed);
   const selectSeed = useGameStore((s) => s.selectSeed);
@@ -26,7 +21,7 @@ export const SeedPacket: React.FC<Props> = ({ type }) => {
   }, [cooldownUntil]);
 
   const isSelected = selectedSeed === type;
-  const isAffordable = sun >= config.cost;
+  const isAffordable = sun >= (config.cost || 0);
   const isReady = remainingCooldown <= 0;
   const canSelect = isAffordable && isReady;
 
@@ -52,7 +47,6 @@ export const SeedPacket: React.FC<Props> = ({ type }) => {
       <Text style={styles.emoji}>{config.emoji}</Text>
       <Text style={styles.cost}>{config.cost}</Text>
 
-      {/* Cooldown Mask Overlay */}
       {remainingCooldown > 0 && (
         <View
           style={[

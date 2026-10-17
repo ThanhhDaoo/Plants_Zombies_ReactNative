@@ -5,17 +5,16 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { GameScreen } from './src/screens/GameScreen';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<'home' | 'game'>('home');
+  const [currentScreen, setCurrentScreen] = useState('home');
 
   useEffect(() => {
-    // Lock screen orientation to landscape
     async function lockOrientation() {
       try {
         await ScreenOrientation.lockAsync(
           ScreenOrientation.OrientationLock.LANDSCAPE
         );
-      } catch {
-        // Fallback on non-supported environments
+      } catch (e) {
+        // Fallback on web or unsupported platforms
       }
     }
     lockOrientation();

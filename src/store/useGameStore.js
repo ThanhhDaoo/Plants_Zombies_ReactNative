@@ -1,33 +1,8 @@
 import { create } from 'zustand';
-import { GameStatus } from '../types/game.types';
-import { PlantType } from '../types/plant.types';
 import { GAME_SETTINGS } from '../game/config/game.config';
 import { PLANTS_CONFIG } from '../game/config/plants.config';
 
-interface GameStoreState {
-  sun: number;
-  selectedSeed: PlantType | null;
-  isShovelActive: boolean;
-  gameStatus: GameStatus;
-  wave: number;
-  totalWaves: number;
-  score: number;
-  seedCooldowns: Record<string, number>; // plantType -> availableAt timestamp
-
-  // Actions
-  addSun: (amount: number) => void;
-  spendSun: (amount: number) => boolean;
-  selectSeed: (seed: PlantType | null) => void;
-  toggleShovel: () => void;
-  setGameStatus: (status: GameStatus) => void;
-  triggerSeedCooldown: (type: PlantType) => void;
-  isSeedReady: (type: PlantType) => boolean;
-  addScore: (points: number) => void;
-  setWave: (wave: number) => void;
-  resetGame: () => void;
-}
-
-export const useGameStore = create<GameStoreState>((set, get) => ({
+export const useGameStore = create((set, get) => ({
   sun: GAME_SETTINGS.INITIAL_SUN,
   selectedSeed: null,
   isShovelActive: false,
@@ -63,7 +38,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
 
   triggerSeedCooldown: (type) => {
     const config = PLANTS_CONFIG[type];
-    const availableAt = Date.now() + config.cooldownMs;
+    const availableAt = Date.now() + (config ? config.cooldownMs : 5000);
     set((state) => ({
       seedCooldowns: {
         ...state.seedCooldowns,

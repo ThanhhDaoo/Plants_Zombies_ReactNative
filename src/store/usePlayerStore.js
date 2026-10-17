@@ -1,24 +1,6 @@
 import { create } from 'zustand';
-import { PlantType } from '../types/plant.types';
 
-interface PlayerState {
-  coins: number;
-  brains: number;
-  highScore: number;
-  unlockedPlants: PlantType[];
-  audioEnabled: boolean;
-  hapticEnabled: boolean;
-
-  // Actions
-  addCoins: (amount: number) => void;
-  addBrains: (amount: number) => void;
-  setHighScore: (score: number) => void;
-  unlockPlant: (plant: PlantType) => void;
-  toggleAudio: () => void;
-  toggleHaptic: () => void;
-}
-
-export const usePlayerStore = create<PlayerState>((set, get) => ({
+export const usePlayerStore = create((set, get) => ({
   coins: 100,
   brains: 0,
   highScore: 0,

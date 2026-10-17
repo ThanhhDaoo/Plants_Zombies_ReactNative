@@ -5,7 +5,7 @@ import { SeedPacket } from './SeedPacket';
 import { ShovelButton } from './ShovelButton';
 import { usePlayerStore } from '../../store/usePlayerStore';
 
-export const SeedBank: React.FC = () => {
+export const SeedBank = () => {
   const unlockedPlants = usePlayerStore((s) => s.unlockedPlants);
 
   return (

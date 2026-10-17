@@ -5,17 +5,12 @@ import {
   StyleSheet,
   Pressable,
   ImageBackground,
-  ScrollView,
 } from 'react-native';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { useGameStore } from '../store/useGameStore';
 import { gameWorld } from '../game/core/GameWorld';
 
-interface Props {
-  onStartGame: () => void;
-}
-
-export const HomeScreen: React.FC<Props> = ({ onStartGame }) => {
+export const HomeScreen = ({ onStartGame }) => {
   const coins = usePlayerStore((s) => s.coins);
   const brains = usePlayerStore((s) => s.brains);
   const highScore = usePlayerStore((s) => s.highScore);

@@ -2,24 +2,23 @@ import { GRID_CONFIG, getCellCenter } from '../config/grid';
 import { PLANTS_CONFIG } from '../config/plants.config';
 import { ZOMBIES_CONFIG } from '../config/zombies.config';
 import { GAME_SETTINGS } from '../config/game.config';
-import { PlantEntity, PlantType, ProjectileEntity } from '../../types/plant.types';
-import { ZombieEntity, ZombieType } from '../../types/zombie.types';
-import { LawnMowerEntity, SunItem } from '../../types/game.types';
 import { useGameStore } from '../../store/useGameStore';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { SoundService } from '../../services/audio/SoundService';
 
 export class GameWorld {
-  plants: PlantEntity[] = [];
-  zombies: ZombieEntity[] = [];
-  projectiles: ProjectileEntity[] = [];
-  suns: SunItem[] = [];
-  lawnMowers: LawnMowerEntity[] = [];
+  constructor() {
+    this.plants = [];
+    this.zombies = [];
+    this.projectiles = [];
+    this.suns = [];
+    this.lawnMowers = [];
 
-  lastNaturalSunTime = 0;
-  lastWaveTime = 0;
-  currentWave = 1;
-  isInitialized = false;
+    this.lastNaturalSunTime = 0;
+    this.lastWaveTime = 0;
+    this.currentWave = 1;
+    this.isInitialized = false;
+  }
 
   init() {
     this.plants = [];
@@ -31,7 +30,6 @@ export class GameWorld {
     this.lastNaturalSunTime = Date.now();
     this.lastWaveTime = Date.now();
 
-    // 5 LawnMowers on column 0
     for (let r = 0; r < GRID_CONFIG.ROWS; r++) {
       this.lawnMowers.push({
         id: `mower-${r}`,
@@ -47,7 +45,7 @@ export class GameWorld {
     this.isInitialized = true;
   }
 
-  update(dt: number, now: number) {
+  update(dt, now) {
     if (!this.isInitialized) return;
     const store = useGameStore.getState();
     if (store.gameStatus !== 'playing') return;
@@ -59,7 +57,8 @@ export class GameWorld {
     }
 
     // 2. Wave Spawner
-    if (now - this.lastWaveTime >= (this.currentWave === 1 ? GAME_SETTINGS.FIRST_ZOMBIE_DELAY_MS : GAME_SETTINGS.WAVE_INTERVAL_MS)) {
+    const delay = this.currentWave === 1 ? GAME_SETTINGS.FIRST_ZOMBIE_DELAY_MS : GAME_SETTINGS.WAVE_INTERVAL_MS;
+    if (now - this.lastWaveTime >= delay) {
       this.lastWaveTime = now;
       this.spawnWave(this.currentWave);
       if (this.currentWave < GAME_SETTINGS.TOTAL_WAVES) {
@@ -68,7 +67,7 @@ export class GameWorld {
       }
     }
 
-    // 3. Update Suns (falling animation)
+    // 3. Update Suns
     for (const sun of this.suns) {
       if (!sun.collected && sun.y < sun.targetY) {
         sun.y += sun.vy * dt;
@@ -76,16 +75,16 @@ export class GameWorld {
       }
     }
 
-    // 4. Update Plants (shooting & producing sun)
+    // 4. Update Plants
     for (let i = this.plants.length - 1; i >= 0; i--) {
       const plant = this.plants[i];
       const cfg = PLANTS_CONFIG[plant.type];
+      if (!cfg) continue;
 
       // Instant explode (CherryBomb)
       if (cfg.instantExplode) {
         if (now - plant.plantedAt >= 1200) {
           SoundService.playExplosion();
-          // Damage zombies in 3x3
           for (const z of this.zombies) {
             const dr = Math.abs(z.row - plant.row);
             const dx = Math.abs(z.x - plant.x);
@@ -117,7 +116,6 @@ export class GameWorld {
 
       // Shoot Projectiles
       if (cfg.shoots && cfg.shootIntervalMs) {
-        // Check if there is any zombie ahead in the same row
         const hasZombieInRow = this.zombies.some((z) => z.row === plant.row && z.x > plant.x && z.health > 0);
         if (hasZombieInRow && now - plant.lastShotTime >= cfg.shootIntervalMs) {
           plant.lastShotTime = now;
@@ -157,7 +155,6 @@ export class GameWorld {
       const p = this.projectiles[i];
       p.x += p.speed * dt;
 
-      // Check collision with zombies on the same row
       let collided = false;
       for (const z of this.zombies) {
         if (z.row === p.row && z.health > 0 && Math.abs(z.x - p.x) < 25) {
@@ -182,21 +179,18 @@ export class GameWorld {
     for (let i = this.zombies.length - 1; i >= 0; i--) {
       const z = this.zombies[i];
 
-      // Slow expiration
       if (z.isSlowed && now > z.slowTimer) {
         z.isSlowed = false;
       }
 
-      // Death check
       if (z.health <= 0) {
-        const zCfg = ZOMBIES_CONFIG[z.type];
+        const zCfg = ZOMBIES_CONFIG[z.type] || ZOMBIES_CONFIG.normal;
         store.addScore(zCfg.points);
         usePlayerStore.getState().addCoins(Math.floor(zCfg.points / 10));
         this.zombies.splice(i, 1);
         continue;
       }
 
-      // Check collision with plant to eat
       const eatingPlant = this.plants.find(
         (p) => p.row === z.row && Math.abs(p.x - z.x) < 30
       );
@@ -205,7 +199,6 @@ export class GameWorld {
         z.eatingPlantId = eatingPlant.id;
         eatingPlant.health -= z.damage * dt;
         if (eatingPlant.health <= 0) {
-          // Plant destroyed
           this.plants = this.plants.filter((p) => p.id !== eatingPlant.id);
           z.eatingPlantId = null;
         }
@@ -215,14 +208,12 @@ export class GameWorld {
         z.x -= currentSpeed * dt;
       }
 
-      // Check reaching end of lawn (x < 50)
       if (z.x < 50) {
         const mower = this.lawnMowers.find((m) => m.row === z.row && !m.used);
         if (mower) {
           mower.active = true;
           SoundService.playLawnMower();
         } else if (z.x < 0) {
-          // Game Over!
           store.setGameStatus('gameover');
           return;
         }
@@ -233,7 +224,6 @@ export class GameWorld {
     for (const mower of this.lawnMowers) {
       if (mower.active && !mower.used) {
         mower.x += mower.speed * dt;
-        // Kill any zombie on that row
         for (const z of this.zombies) {
           if (z.row === mower.row && Math.abs(z.x - mower.x) < 40) {
             z.health = 0;
@@ -268,12 +258,12 @@ export class GameWorld {
     });
   }
 
-  spawnWave(waveIndex: number) {
+  spawnWave(waveIndex) {
     const count = 1 + Math.floor(waveIndex * 1.5);
     for (let i = 0; i < count; i++) {
       setTimeout(() => {
         const row = Math.floor(Math.random() * GRID_CONFIG.ROWS);
-        let type: ZombieType = 'normal';
+        let type = 'normal';
         if (waveIndex >= 2 && Math.random() < 0.4) type = 'cone';
         if (waveIndex >= 4 && Math.random() < 0.3) type = 'bucket';
         if (waveIndex >= 5 && Math.random() < 0.25) type = 'fast';
@@ -284,8 +274,8 @@ export class GameWorld {
     }
   }
 
-  spawnZombie(type: ZombieType, row: number, startX?: number) {
-    const cfg = ZOMBIES_CONFIG[type];
+  spawnZombie(type, row, startX) {
+    const cfg = ZOMBIES_CONFIG[type] || ZOMBIES_CONFIG.normal;
     const center = getCellCenter(row, 0);
     this.zombies.push({
       id: `zombie-${Math.random()}`,
@@ -304,15 +294,14 @@ export class GameWorld {
     });
   }
 
-  plantAt(row: number, col: number, type: PlantType): boolean {
+  plantAt(row, col, type) {
     const store = useGameStore.getState();
     const cfg = PLANTS_CONFIG[type];
+    if (!cfg) return false;
 
-    // Check if cell already occupied
     const occupied = this.plants.some((p) => p.row === row && p.col === col);
     if (occupied) return false;
 
-    // Check sun and spend
     if (!store.spendSun(cfg.cost)) return false;
 
     store.triggerSeedCooldown(type);
@@ -335,11 +324,11 @@ export class GameWorld {
     return true;
   }
 
-  removePlantAt(row: number, col: number) {
+  removePlantAt(row, col) {
     this.plants = this.plants.filter((p) => !(p.row === row && p.col === col));
   }
 
-  collectSun(sunId: string) {
+  collectSun(sunId) {
     const sunIndex = this.suns.findIndex((s) => s.id === sunId && !s.collected);
     if (sunIndex !== -1) {
       const sun = this.suns[sunIndex];

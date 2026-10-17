@@ -11,7 +11,7 @@ class SoundServiceImpl {
   }
 
   async playShoot() {
-    // Minimal vibration / sound
+    // Minimal vibration / shoot sound
   }
 
   async playSplat() {
@@ -26,11 +26,11 @@ class SoundServiceImpl {
     this.triggerHaptic(Haptics.ImpactFeedbackStyle.Heavy);
   }
 
-  private triggerHaptic(style: Haptics.ImpactFeedbackStyle) {
+  triggerHaptic(style) {
     if (usePlayerStore.getState().hapticEnabled) {
       try {
         Haptics.impactAsync(style);
-      } catch {
+      } catch (e) {
         // Fallback for unsupported devices/web
       }
     }

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useGameStore } from '../../store/useGameStore';
 
-export const SunCounter: React.FC = () => {
+export const SunCounter = () => {
   const sun = useGameStore((s) => s.sun);
 
   return (

@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, Text, StyleSheet } from 'react-native';
 import { useGameStore } from '../../store/useGameStore';
 
-export const ShovelButton: React.FC = () => {
+export const ShovelButton = () => {
   const isShovelActive = useGameStore((s) => s.isShovelActive);
   const toggleShovel = useGameStore((s) => s.toggleShovel);
 

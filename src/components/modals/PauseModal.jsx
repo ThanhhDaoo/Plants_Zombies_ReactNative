@@ -3,11 +3,7 @@ import { View, Text, StyleSheet, Modal, Pressable } from 'react-native';
 import { useGameStore } from '../../store/useGameStore';
 import { gameWorld } from '../../game/core/GameWorld';
 
-interface Props {
-  onExit: () => void;
-}
-
-export const PauseModal: React.FC<Props> = ({ onExit }) => {
+export const PauseModal = ({ onExit }) => {
   const gameStatus = useGameStore((s) => s.gameStatus);
   const setGameStatus = useGameStore((s) => s.setGameStatus);
   const resetGame = useGameStore((s) => s.resetGame);

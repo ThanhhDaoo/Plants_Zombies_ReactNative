@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, useWindowDimensions, LayoutChangeEvent } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import { GameCanvas } from '../game/render/GameCanvas';
 import { SeedBank } from '../components/hud/SeedBank';
 import { TopBar } from '../components/hud/TopBar';
@@ -7,18 +7,14 @@ import { GameOverModal } from '../components/modals/GameOverModal';
 import { VictoryModal } from '../components/modals/VictoryModal';
 import { PauseModal } from '../components/modals/PauseModal';
 
-interface Props {
-  onBackToMenu: () => void;
-}
-
-export const GameScreen: React.FC<Props> = ({ onBackToMenu }) => {
+export const GameScreen = ({ onBackToMenu }) => {
   const windowDims = useWindowDimensions();
   const [layoutDims, setLayoutDims] = useState({
     width: windowDims.width,
     height: windowDims.height,
   });
 
-  const handleLayout = (e: LayoutChangeEvent) => {
+  const handleLayout = (e) => {
     const { width, height } = e.nativeEvent.layout;
     if (width > 0 && height > 0) {
       setLayoutDims({ width, height });

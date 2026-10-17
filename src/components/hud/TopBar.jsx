@@ -3,11 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useGameStore } from '../../store/useGameStore';
 import { usePlayerStore } from '../../store/usePlayerStore';
 
-interface Props {
-  onBackToMenu: () => void;
-}
-
-export const TopBar: React.FC<Props> = ({ onBackToMenu }) => {
+export const TopBar = ({ onBackToMenu }) => {
   const wave = useGameStore((s) => s.wave);
   const totalWaves = useGameStore((s) => s.totalWaves);
   const setGameStatus = useGameStore((s) => s.setGameStatus);

@@ -1,6 +1,4 @@
-import { ZombieConfig, ZombieType } from '../../types/zombie.types';
-
-export const ZOMBIES_CONFIG: Record<ZombieType, ZombieConfig> = {
+export const ZOMBIES_CONFIG = {
   normal: {
     type: 'normal',
     name: 'Zombie Thường',
@@ -8,7 +6,7 @@ export const ZOMBIES_CONFIG: Record<ZombieType, ZombieConfig> = {
     health: 200,
     maxHealth: 200,
     speed: 25,
-    damage: 100, // damage per second
+    damage: 100,
     points: 100,
     imageKey: 'zombie_normal',
   },

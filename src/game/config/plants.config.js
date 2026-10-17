@@ -1,6 +1,4 @@
-import { PlantConfig, PlantType } from '../../types/plant.types';
-
-export const PLANTS_CONFIG: Record<PlantType, PlantConfig> = {
+export const PLANTS_CONFIG = {
   sunflower: {
     type: 'sunflower',
     name: 'Hoa Hướng Dương',

@@ -4,12 +4,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { gameWorld } from '../../game/core/GameWorld';
 import { GAME_SETTINGS } from '../../game/config/game.config';
 
-interface Props {
-  onRestart: () => void;
-  onExit: () => void;
-}
-
-export const VictoryModal: React.FC<Props> = ({ onRestart, onExit }) => {
+export const VictoryModal = ({ onRestart, onExit }) => {
   const gameStatus = useGameStore((s) => s.gameStatus);
   const score = useGameStore((s) => s.score);
   const resetGame = useGameStore((s) => s.resetGame);
@@ -19,7 +14,7 @@ export const VictoryModal: React.FC<Props> = ({ onRestart, onExit }) => {
   const handleRestart = () => {
     resetGame();
     gameWorld.init();
-    onRestart();
+    if (onRestart) onRestart();
   };
 
   return (

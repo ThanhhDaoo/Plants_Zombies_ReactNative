@@ -3,12 +3,7 @@ import { View, Text, StyleSheet, Modal, Pressable } from 'react-native';
 import { useGameStore } from '../../store/useGameStore';
 import { gameWorld } from '../../game/core/GameWorld';
 
-interface Props {
-  onRestart: () => void;
-  onExit: () => void;
-}
-
-export const GameOverModal: React.FC<Props> = ({ onRestart, onExit }) => {
+export const GameOverModal = ({ onRestart, onExit }) => {
   const gameStatus = useGameStore((s) => s.gameStatus);
   const score = useGameStore((s) => s.score);
   const resetGame = useGameStore((s) => s.resetGame);
@@ -18,7 +13,7 @@ export const GameOverModal: React.FC<Props> = ({ onRestart, onExit }) => {
   const handleRestart = () => {
     resetGame();
     gameWorld.init();
-    onRestart();
+    if (onRestart) onRestart();
   };
 
   return (
