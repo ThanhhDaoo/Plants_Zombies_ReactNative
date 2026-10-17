@@ -1,10 +1,6 @@
 # 🌱 Plants vs Zombies: React Native Mobile Edition 🧟
 
 <p align="center">
-  <img src="./assets/game/lawn_bg.jpg" alt="Plants vs Zombies Lawn" width="100%" style="border-radius: 12px;" />
-</p>
-
-<p align="center">
   <b>Tựa game chiến thuật phòng thủ sân cỏ kinh điển được tái hiện hoàn toàn trên nền tảng di động với React Native & Expo.</b>
 </p>
 
