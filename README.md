@@ -1,116 +1,168 @@
-# Plants vs Zombies: Battle Royale
+# 🌱 Plants vs Zombies: React Native Mobile Edition 🧟
 
-Game sinh tồn chiến thuật 2D kết hợp phong cách Battle Royale và cơ chế Plants vs Zombies cổ điển, được phát triển trên nền tảng Web, Mobile PWA và ứng dụng di động Native (Android & iOS) sử dụng Vite và Capacitor.
+<p align="center">
+  <img src="./assets/game/lawn_bg.jpg" alt="Plants vs Zombies Lawn" width="100%" style="border-radius: 12px;" />
+</p>
+
+<p align="center">
+  <b>Tựa game chiến thuật phòng thủ sân cỏ kinh điển được tái hiện hoàn toàn trên nền tảng di động với React Native & Expo.</b>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React_Native-0.88-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Native" />
+  <img src="https://img.shields.io/badge/Expo_SDK-58-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" />
+  <img src="https://img.shields.io/badge/JavaScript-100%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/Shopify_Skia-2D_Engine-E34F26?style=for-the-badge&logo=shopify&logoColor=white" alt="Skia" />
+  <img src="https://img.shields.io/badge/Platform-iOS%20%7C%20Android-4CAF50?style=for-the-badge&logo=android" alt="Platform" />
+</p>
+
+---
+
+## 📖 Giới thiệu
+
+Dự án **Plants vs Zombies: React Native** được xây dựng lại từ đầu bằng **React Native thuần (JavaScript)**, loại bỏ hoàn toàn web wrapper (Capacitor/Vite). Game tối ưu trải nghiệm công thái học trên thiết bị di động với chế độ màn hình ngang (Landscape), đồ họa Canvas 2D tốc độ cao qua thư viện **@shopify/react-native-skia** và hệ thống quản lý trạng thái mượt mà bằng **Zustand**.
 
 **Tác giả:** Thanh Đạo ([@ThanhhDaoo](https://github.com/ThanhhDaoo))
 
 ---
 
-## Giới thiệu
+## 🌟 Tính năng nổi bật
 
-Dự án tái hiện thế giới Plants vs Zombies dưới góc nhìn chiến đấu sinh tồn thời gian thực:
-- Nhập vai Đậu Chiến Binh Spetsnaz với khả năng di chuyển tự do, ngắm bắn xoay 360 độ, lướt né đòn và thay băng đạn.
-- Sinh tồn trước các đợt sóng Zombie đa dạng và Boss đột biến trong khu vườn vòng bo kịch độc.
-- Thu thập hòm tiếp tế rơi ngẫu nhiên trên bản đồ để sở hữu các vũ khí hỏa lực cao cấp.
-- Nâng cấp chỉ số bản thân (Máu, Giáp, Tốc độ, Bán kính hút đồ) và mở khóa các loại súng trong Tủ Đồ.
+- 🎮 **Đồ họa Canvas 2D 60-120 FPS**: Render bằng C++ Engine của `@shopify/react-native-skia`, đảm bảo khung hình luôn mượt mà ngay cả khi có hàng chục Zombie và đạn bay trên sân cỏ.
+- 📱 **Tự động khóa màn hình ngang**: Sử dụng `expo-screen-orientation` khóa chế độ Landscape chuẩn như phiên bản PvZ gốc.
+- 🌻 **Hệ thống Cây trồng phong phú**:
+  - **Hoa Hướng Dương (Sunflower)**: Sản xuất mặt trời định kỳ.
+  - **Đậu Bắn Tỉa (Peashooter)**: Bắn hạt đậu cơ bản.
+  - **Hạt Óc Chó (Wall-nut)**: Tường thành vững chắc với lượng máu cực lớn cản bước quái.
+  - **Đậu Băng (Snow Pea)**: Bắn hạt đậu băng làm chậm 50% tốc độ di chuyển của Zombie.
+  - **Đậu Nòng Đôi (Repeater)**: Xả liên tiếp 2 viên đạn mỗi lượt bắn.
+  - **Cây Ăn Thịt (Chomper)**: Ngoạm nuốt chửng Zombie tiếp cận.
+  - **Bom Anh Đào (Cherry Bomb)**: Phát nổ hủy diệt dọn sạch Zombie trong bán kính 3x3 ô.
+- 🧟 **Hệ thống Zombie đa dạng**:
+  - **Zombie Thường (Normal Zombie)**: Cơ bản nhưng đông đảo.
+  - **Zombie Nón (Conehead Zombie)**: Giáp nón bảo vệ, chịu đòn tốt gấp đôi.
+  - **Zombie Xô (Buckethead Zombie)**: Đội xô sắt dày, cực kỳ trâu bò.
+  - **Zombie Điền Kinh (Fast Zombie)**: Bứt tốc lao thẳng vào vườn.
+  - **Zombie Khổng Lồ (Strong Zombie)**: Máu trâu, sát thương đập cắn cực mạnh.
+- 🚜 **Máy Cắt Cỏ Cứu Cánh (Lawn Mowers)**: Hàng phòng thủ cuối cùng ở mỗi hàng cỏ, tự động kích hoạt nghiền nát toàn bộ Zombie trên hàng khi có quái đột nhập.
+- ☀️ **Cơ chế nhặt Mặt Trời trực quan**: Nhặt mặt trời rơi từ bầu trời hoặc từ Hoa hướng dương chỉ bằng một cú chạm.
+- 🎴 **Cụm HUD tiện lợi**:
+  - Khay thẻ bài hiển thị thời gian hồi chiêu (Cooldown Overlay) trực quan.
+  - Xẻng nhổ cây (Shovel) hỗ trợ đào cây tái cơ cấu đội hình.
+  - Bộ đếm mặt trời và thanh tiến trình đợt Wave quái.
+- 📳 **Phản hồi xúc giác (Haptic Feedback)**: Rung nhẹ khi nhặt sun, trồng cây, đạn nổ qua `expo-haptics`.
 
 ---
 
-## Nền tảng hỗ trợ
+## 🏗️ Cấu trúc thư mục chuẩn (Enterprise Architecture)
 
-- **Web Máy Tính (Desktop):** Giao diện sảnh điều khiển rộng mở, đầy đủ nhiệm vụ ngày, bảng xếp hạng và hiển thị phím tắt trực quan (WASD, Chuột, Space, R).
-- **Web Di Động (Mobile Responsive):** Tối ưu hóa cho màn hình ngang, cụm phím điều khiển công thái học dạng vòng cung ôm sát ngón tay cái, thanh HUD bán trong suốt chống che khuất zombie.
-- **Android:** Hỗ trợ cài đặt trực tiếp qua file APK hoặc đồng bộ qua Android Studio.
-- **iOS:** Tích hợp sẵn project Xcode thông qua Capacitor, sẵn sàng chạy trên máy ảo hoặc thiết bị iPhone thật.
+```text
+Plants_Zombies_ReactNative/
+├── assets/
+│   ├── game/                         # Tài nguyên đồ họa (lawn_bg.jpg, zombie_normal.png,...)
+│   └── (icon.png, favicon.png,...)   # App icon & Splash screen
+│
+├── src/
+│   ├── game/                         # [LÕI GAME ENGINE & SKIA 2D CANVAS]
+│   │   ├── config/
+│   │   │   ├── grid.js               # Kích thước lưới cỏ 5x9, pixel & cell coordinate
+│   │   │   ├── plants.config.js      # Chỉ số máu, giá Sun, cooldown của cây
+│   │   │   ├── zombies.config.js     # Chỉ số máu, tốc độ di chuyển của Zombie
+│   │   │   └── game.config.js        # Cấu hình đợt wave quái, nhịp rơi mặt trời
+│   │   ├── core/
+│   │   │   └── GameWorld.js          # Game Loop, va chạm đạn, zombie cắn cây, máy cắt cỏ
+│   │   └── render/
+│   │       └── GameCanvas.jsx        # Component Canvas 2D Skia render 60 FPS
+│   │
+│   ├── components/                   # Giao diện HUD & Modals bằng React Native
+│   │   ├── hud/
+│   │   │   ├── TopBar.jsx            # Thanh đợt quái, vàng, nút Pause, âm thanh
+│   │   │   ├── SeedBank.jsx          # Khay thẻ bài cây trồng
+│   │   │   ├── SeedPacket.jsx        # Thẻ bài cây (cooldown mask & giá sun)
+│   │   │   ├── SunCounter.jsx        # Bộ đếm mặt trời
+│   │   │   └── ShovelButton.jsx      # Xẻng nhổ cây
+│   │   └── modals/
+│   │       ├── GameOverModal.jsx     # Bảng thông báo Zombie ăn não & chơi lại
+│   │       ├── VictoryModal.jsx      # Bảng chiến thắng các đợt wave
+│   │       └── PauseModal.jsx        # Bảng tạm dừng trận đấu
+│   │
+│   ├── screens/                      # Các màn hình ứng dụng
+│   │   ├── HomeScreen.jsx            # Sảnh chính (Menu, nhân vật, nút bắt đầu)
+│   │   └── GameScreen.jsx            # Màn chơi chính (Canvas + HUD)
+│   │
+│   ├── store/                        # Quản lý State bằng Zustand
+│   │   ├── useGameStore.js           # Trạng thái ván đấu hiện tại (Sun, Seed, GameStatus)
+│   │   └── usePlayerStore.js         # Lưu tiến trình người chơi (Vàng, não, điểm cao)
+│   │
+│   └── services/audio/
+│       └── SoundService.js           # Âm thanh & phản hồi rung Haptic
+│
+├── App.jsx                           # Root component, khóa xoay ngang & điều hướng
+├── index.js                          # Entry point của ứng dụng Expo
+├── app.json                          # Cấu hình Expo Landscape & App metadata
+└── package.json                      # Danh sách dependencies chuẩn
+```
 
 ---
 
-## Hướng dẫn cài đặt và chạy trên máy tính
+## 🚀 Hướng dẫn cài đặt và Chạy ứng dụng
 
-### 1. Yêu cầu hệ thống
-- Node.js phiên bản 18 trở lên
-- npm
+### 1. Yêu cầu môi trường
+- **Node.js**: Phiên bản 18 trở lên (Khuyến nghị Node LTS hoặc v22).
+- **npm** hoặc **yarn** / **bun**.
+- Điện thoại di động đã cài ứng dụng **Expo Go** (có sẵn trên Google Play Store & Apple App Store).
 
-### 2. Cài đặt thư viện
+### 2. Cài đặt các gói thư viện
 ```bash
 npm install
 ```
 
-### 3. Chạy môi trường phát triển (Development)
+### 3. Khởi chạy máy chủ phát triển
 ```bash
-npm run dev
+npx expo start
 ```
-Truy cập đường dẫn: `http://localhost:3000` trên trình duyệt.
 
-### 4. Đóng gói bản Web (Production)
-```bash
-npm run build
-```
-File build hoàn thiện sẽ nằm trong thư mục `dist/`.
+### 4. Trải nghiệm trên thiết bị
+- **Trên điện thoại thật (Khuyến nghị)**: Mở ứng dụng **Expo Go** và quét mã QR xuất hiện trên terminal.
+- **Trên Android Emulator**: Bấm phím **`a`** trên terminal.
+- **Trên iOS Simulator (macOS)**: Bấm phím **`i`** trên terminal.
 
 ---
 
-## Hướng dẫn build ứng dụng di động
+## 🛠️ Công nghệ sử dụng
 
-### Bản Android
-1. Build code web và đồng bộ sang Android:
-   ```bash
-   npm run build:android
-   ```
-2. Build file APK trực tiếp qua dòng lệnh:
-   ```bash
-   cd android && ./gradlew assembleDebug && cd ..
-   ```
-   File APK đầu ra nằm tại: `android/app/build/outputs/apk/debug/app-debug.apk` (hoặc thư mục `build-outputs/PlantsVsZombies-debug.apk`).
-3. Hoặc mở project trong Android Studio:
-   ```bash
-   npm run cap:open:android
-   ```
+| Công nghệ | Vai trò |
+| :--- | :--- |
+| **React Native (0.88)** | Nền tảng xây dựng ứng dụng di động đa nền tảng |
+| **Expo SDK (v58)** | Bộ công cụ phát triển ứng dụng di động hiện đại |
+| **@shopify/react-native-skia** | Engine đồ họa 2D Canvas hiệu năng cao 60 FPS |
+| **Zustand** | Quản lý trạng thái nhẹ, không re-render canvas không cần thiết |
+| **React Native Reanimated & Worklets** | Hỗ trợ chuyển động đồ họa luồng Native |
+| **Expo Haptics** | Phản hồi rung xúc giác cho trải nghiệm chạm chân thực |
+| **Expo Screen Orientation** | Khóa hướng màn hình ngang (Landscape mode) |
 
-### Bản iOS
-1. Build code web và đồng bộ sang iOS:
+---
+
+## 📦 Đóng gói ứng dụng di động (EAS Build)
+
+Để xuất file cài đặt APK cho Android hoặc IPA cho iOS bằng EAS (Expo Application Services):
+
+1. Cài đặt EAS CLI:
    ```bash
-   npm run build:ios
+   npm install -g eas-cli
    ```
-2. Mở project trong Xcode để kiểm thử hoặc đóng gói:
+2. Đăng nhập tài khoản Expo:
    ```bash
-   npm run cap:open:ios
+   eas login
    ```
-3. Hoặc biên dịch trực tiếp qua `xcodebuild`:
+3. Cấu hình và đóng gói file APK trực tiếp trên cloud:
    ```bash
-   xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
+   eas build --platform android --profile preview
    ```
 
 ---
 
-## Cấu trúc thư mục dự án
+## 📄 Bản quyền & Giấy phép
 
-```
-plants-vs-zombies/
-├── android/               # Dự án Android Studio (Capacitor)
-├── ios/                   # Dự án Xcode (Capacitor)
-├── build-outputs/         # Nơi lưu trữ file APK và bản nén cài đặt
-├── public/                # Tài nguyên tĩnh, favicon, PWA manifest, service worker
-├── src/
-│   ├── js/
-│   │   ├── pubg/          # Logic chế độ Battle Royale (điều khiển, nhân vật, vũ khí, kho đồ, HUD)
-│   │   ├── config.js      # Cấu hình chỉ số cây và zombie
-│   │   ├── sound.js       # Hệ thống âm thanh tổng hợp Web Audio API
-│   │   └── main.js        # Khởi chạy ứng dụng
-│   └── styles/
-│       ├── pubg.css       # Giao diện sàn đấu, joystick, nút bắn, thanh máu sinh tồn
-│       ├── lobby.css      # Giao diện trang chủ, sảnh chờ, kho đồ và hướng dẫn
-│       ├── responsive.css # Tối ưu hóa hiển thị xoay ngang cho điện thoại và máy tính bảng
-│       └── index.css      # Điểm nạp CSS chính
-├── capacitor.config.json  # Cấu hình ứng dụng di động Capacitor
-├── index.html             # Trang giao diện chính
-├── package.json           # Danh sách gói phụ thuộc và câu lệnh build
-└── vite.config.js         # Cấu hình đóng gói Vite
-```
-
----
-
-## Tác giả
-
-- **Thanh Đạo** - [@ThanhhDaoo](https://github.com/ThanhhDaoo)
-- Mọi quyền được bảo lưu (All Rights Reserved).
+Dự án được xây dựng cho mục đích học tập và giải trí cá nhân. Bản quyền hình ảnh, âm thanh và ý tưởng gốc thuộc về **PopCap Games & Electronic Arts (EA)**.
+Mã nguồn phát triển bởi **Thanh Đạo (@ThanhhDaoo)**.
