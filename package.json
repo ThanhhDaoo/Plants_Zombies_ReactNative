@@ -1,44 +1,39 @@
 {
   "name": "plants-vs-zombies",
   "version": "1.0.0",
-  "private": true,
-  "description": "Plants vs Zombies - Web, Mobile PWA & Native App",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "cap:sync": "cap sync",
-    "cap:add:android": "cap add android",
-    "cap:add:ios": "cap add ios",
-    "cap:open:android": "cap open android",
-    "cap:open:ios": "cap open ios",
-    "build:mobile": "vite build && cap sync",
-    "build:android": "vite build && cap sync android",
-    "build:ios": "vite build && cap sync ios"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ThanhhDaoo/Plants-vs-Zombies.git"
-  },
-  "keywords": [
-    "game",
-    "plants-vs-zombies",
-    "pwa",
-    "capacitor",
-    "mobile",
-    "vite"
-  ],
-  "author": "Thanh Đạo (@ThanhhDaoo)",
-  "license": "UNLICENSED",
-  "devDependencies": {
-    "@capacitor/cli": "^8.5.3",
-    "sharp": "^0.35.5",
-    "vite": "^6.4.4"
-  },
+  "description": "Plants vs Zombies - Built with React Native & Expo",
+  "main": "index.ts",
   "dependencies": {
-    "@capacitor/android": "^8.5.3",
-    "@capacitor/core": "^8.5.3",
-    "@capacitor/ios": "^8.5.3"
+    "@shopify/react-native-skia": "2.14.0",
+    "expo": "~58.0.14",
+    "expo-av": "^16.0.8",
+    "expo-haptics": "~58.0.7",
+    "expo-screen-orientation": "~58.0.3",
+    "expo-status-bar": "~58.0.3",
+    "react": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-worklets": "0.13.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "private": true,
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "expo-av"
+        ]
+      }
+    }
   }
 }

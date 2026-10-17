@@ -1,38 +1,46 @@
-# Dependencies
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
 node_modules/
-.pnp
-.pnp.js
 
-# Production build
+# Expo
+.expo/
 dist/
-build/
+web-build/
+expo-env.d.ts
 
-# Capacitor & Native Builds
-android/.gradle
-android/build
-android/app/build
-ios/App/Pods
-ios/App/build
-build-outputs/
-**/swiftpm/
-*.xcworkspace/xcshareddata/swiftpm/
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
 
-# IDE & OS
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+# IDE and vercel
 .idea/
-.vscode/
-*.local
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Vercel
-.vercel
+.vercel/
+_legacy_web/
