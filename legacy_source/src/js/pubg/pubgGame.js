@@ -120,7 +120,7 @@ export function startPubgGame() {
     pubgState.camera.x = 1200;
     pubgState.camera.y = 1200;
   }
-  p.invincibleTimer = 1800; // 1.8s spawn shield
+  p.invincibleTimer = 2500; // 2.5s spawn shield
   p.health = playerStats.maxHealth;
   p.maxHealth = playerStats.maxHealth;
   p.armor = playerStats.initialArmor;

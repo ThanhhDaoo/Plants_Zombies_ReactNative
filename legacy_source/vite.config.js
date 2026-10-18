@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: './',
   server: {
     port: 3000,
     host: true, // Open to local network so phone can test directly

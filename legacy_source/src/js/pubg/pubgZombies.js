@@ -190,24 +190,19 @@ export function spawnInitialZombies(count = 32) {
 
     const typeDef = ZOMBIE_TYPES[typeKey];
 
-    // Spawn across map
+    // Spawn across map with safe spacing from player
     let x, y;
+    const isBossRaid = inventory.getGameMode() === 'boss_raid';
     if (typeKey === 'boss') {
       x = 1200;
-      y = 900;
-    } else if (i >= 1 && i <= 3) {
-      // Immediate action: 3 zombies close to player (220-300px away) so player encounters enemies right away!
-      const a = (i / 3) * Math.PI * 2 + Math.random() * 0.4;
-      const dist = 220 + Math.random() * 80;
-      x = p.x + Math.cos(a) * dist;
-      y = p.y + Math.sin(a) * dist;
+      y = isBossRaid ? 900 : 450;
     } else {
       let attempts = 0;
       do {
         x = 140 + Math.random() * (MAP_CONFIG.WIDTH - 280);
         y = 140 + Math.random() * (MAP_CONFIG.HEIGHT - 280);
         attempts++;
-      } while (Math.hypot(x - p.x, y - p.y) < 350 && attempts < 25);
+      } while (Math.hypot(x - p.x, y - p.y) < 480 && attempts < 40);
     }
 
     pubgState.zombies.push({
@@ -340,7 +335,8 @@ export function updateZombies(delta) {
     }
 
     const distToPlayer = Math.hypot(p.x - z.x, p.y - z.y);
-    const seesPlayer = z.isBoss || inventory.getGameMode() === 'boss_raid' || distToPlayer < 650;
+    const seesPlayer = z.isBoss || z.isAggroed || inventory.getGameMode() === 'boss_raid' || distToPlayer < 380;
+    if (seesPlayer) z.isAggroed = true;
 
     if (distFromZone > zone.radius + 120) {
       // Return to zone
