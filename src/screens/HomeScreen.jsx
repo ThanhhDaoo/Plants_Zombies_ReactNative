@@ -22,10 +22,7 @@ export const HomeScreen = ({ onStartGame }) => {
   const unlockedWeapons = usePlayerStore((s) => s.unlockedWeapons);
   const weaponLevels = usePlayerStore((s) => s.weaponLevels);
   const stats = usePlayerStore((s) => s.stats);
-  const selectedSkin = usePlayerStore((s) => s.selectedSkin);
-  const selectedPet = usePlayerStore((s) => s.selectedPet);
   const canFreeSpin = usePlayerStore((s) => s.canFreeSpin);
-  const getZenRewards = usePlayerStore((s) => s.getZenRewards);
 
   const selectWeapon = usePlayerStore((s) => s.selectWeapon);
   const unlockWeapon = usePlayerStore((s) => s.unlockWeapon);
@@ -95,26 +92,11 @@ export const HomeScreen = ({ onStartGame }) => {
 
             <View style={styles.heroAvatarContainer}>
               <View style={styles.heroAura} />
-              <Text style={styles.heroAvatar}>
-                {SKINS_CONFIG[selectedSkin]?.emoji || '🌱'}
-              </Text>
-              {selectedPet && (
-                <View style={styles.petFloatingBadge}>
-                  <Text style={styles.petFloatingEmoji}>
-                    {PETS_CONFIG[selectedPet]?.emoji || '🐾'}
-                  </Text>
-                </View>
-              )}
+              <Text style={styles.heroAvatar}>🌱</Text>
             </View>
 
-            <Text style={styles.heroName}>
-              {SKINS_CONFIG[selectedSkin]?.name || 'ĐẬU CHIẾN BINH'}
-            </Text>
-            <Text style={styles.heroSub}>
-              {selectedPet
-                ? `Đồng hành: ${PETS_CONFIG[selectedPet]?.name}`
-                : 'Sẵn sàng sinh tồn trong vòng bo'}
-            </Text>
+            <Text style={styles.heroName}>ĐẬU CHIẾN BINH</Text>
+            <Text style={styles.heroSub}>Sẵn sàng sinh tồn trong vòng bo</Text>
 
             {/* Hero Stats */}
             <View style={styles.statList}>

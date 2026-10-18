@@ -6,7 +6,6 @@
   "dependencies": {
     "@shopify/react-native-skia": "2.14.0",
     "expo": "~58.0.14",
-    "expo-av": "^16.0.8",
     "expo-haptics": "~58.0.7",
     "expo-screen-orientation": "~58.0.3",
     "expo-status-bar": "~58.0.3",
@@ -16,7 +15,6 @@
     "react-native-worklets": "0.13.0",
     "zustand": "^5.0.15"
   },
-  "devDependencies": {},
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -25,14 +23,5 @@
     "dev:web": "npm run dev --prefix legacy_source",
     "dev:mobile": "expo start"
   },
-  "private": true,
-  "expo": {
-    "doctor": {
-      "reactNativeDirectoryCheck": {
-        "exclude": [
-          "expo-av"
-        ]
-      }
-    }
-  }
+  "private": true
 }
