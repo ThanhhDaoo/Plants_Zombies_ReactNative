@@ -7,6 +7,7 @@ import { CombatControls } from '../components/controls/CombatControls';
 import { BattleRoyaleHUD } from '../components/hud/BattleRoyaleHUD';
 import { SurvivalResultModal } from '../components/modals/SurvivalResultModal';
 import { PauseModal } from '../components/modals/PauseModal';
+import { PerkSelectionModal } from '../components/modals/PerkSelectionModal';
 import { usePlayerStore } from '../store/usePlayerStore';
 
 export const BattleRoyaleScreen = ({ onBackToMenu }) => {
@@ -75,6 +76,8 @@ export const BattleRoyaleScreen = ({ onBackToMenu }) => {
       {/* 2. Top & Bottom HUD */}
       <BattleRoyaleHUD
         tick={tick}
+        width={width}
+        height={height}
         onPause={() => {
           battleRoyaleEngine.isPaused = true;
           setIsPaused(true);
@@ -111,6 +114,17 @@ export const BattleRoyaleScreen = ({ onBackToMenu }) => {
         score={battleRoyaleEngine.player.score}
         onRestart={startNewMatch}
         onHome={onBackToMenu}
+      />
+
+      {/* 7. Roguelike Perk Selection Modal */}
+      <PerkSelectionModal
+        visible={battleRoyaleEngine.isSelectingPerk}
+        perks={battleRoyaleEngine.pendingPerks}
+        level={battleRoyaleEngine.player.level}
+        onSelectPerk={(perk) => {
+          battleRoyaleEngine.applyPerk(perk);
+          setTick((t) => t + 1);
+        }}
       />
     </View>
   );

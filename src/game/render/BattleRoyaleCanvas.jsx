@@ -52,8 +52,8 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
   const camera = battleRoyaleEngine.camera;
   const zone = battleRoyaleEngine.zone;
 
-  const camOffsetX = -camera.x + width / 2;
-  const camOffsetY = -camera.y + height / 2;
+  const camOffsetX = -camera.x + width / 2 + (camera.shakeX || 0);
+  const camOffsetY = -camera.y + height / 2 + (camera.shakeY || 0);
 
   return (
     <View style={styles.container}>
@@ -141,7 +141,18 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
             </Group>
           ))}
 
-          {/* Ground Items (Loot) */}
+          {/* Acid Patches */}
+          {battleRoyaleEngine.acidPatches.map((patch) => (
+            <Circle
+              key={patch.id}
+              cx={patch.x}
+              cy={patch.y}
+              r={patch.radius}
+              color="rgba(198, 255, 0, 0.35)"
+            />
+          ))}
+
+          {/* Ground Items (Loot & EXP) */}
           {battleRoyaleEngine.groundItems.map((item) => (
             <Group key={item.id}>
               {item.type === 'coin' && (
@@ -155,6 +166,13 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
               )}
               {item.type === 'armor' && (
                 <Circle cx={item.x} cy={item.y} r={11} color="#00bcd4" />
+              )}
+              {item.type === 'exp' && (
+                <Group>
+                  <Circle cx={item.x} cy={item.y} r={9} color="rgba(0, 229, 255, 0.35)" />
+                  <Circle cx={item.x} cy={item.y} r={5} color="#00e5ff" />
+                  <Circle cx={item.x} cy={item.y} r={2} color="#ffffff" />
+                </Group>
               )}
             </Group>
           ))}
@@ -193,6 +211,16 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
                   />
                 ) : (
                   <Circle cx={z.x} cy={z.y} r={z.radius} color={z.color} />
+                )}
+
+                {/* Frozen Aura */}
+                {z.isFrozen && (
+                  <Circle
+                    cx={z.x}
+                    cy={z.y}
+                    r={z.radius * 1.35}
+                    color="rgba(0, 229, 255, 0.45)"
+                  />
                 )}
 
                 {/* Zombie Health Bar */}

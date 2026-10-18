@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { battleRoyaleEngine } from '../../game/core/BattleRoyaleEngine';
 import { WEAPONS } from '../../game/config/pubgWeapons';
 
-export const BattleRoyaleHUD = ({ onPause, tick }) => {
+export const BattleRoyaleHUD = ({ onPause, tick, width, height }) => {
   const p = battleRoyaleEngine.player;
   const z = battleRoyaleEngine.zone;
   const rewards = battleRoyaleEngine.matchRewards;
@@ -12,6 +12,7 @@ export const BattleRoyaleHUD = ({ onPause, tick }) => {
 
   const hpRatio = Math.max(0, Math.min(1, p.health / p.maxHealth));
   const armorRatio = Math.max(0, Math.min(1, p.armor / p.maxArmor));
+  const expRatio = Math.max(0, Math.min(1, (p.exp || 0) / (p.expToNextLevel || 50)));
 
   const formatTime = (seconds) => {
     const s = Math.max(0, Math.floor(seconds));
@@ -69,6 +70,49 @@ export const BattleRoyaleHUD = ({ onPause, tick }) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* EXP Level Progress Bar */}
+      <View style={styles.expBarRow} pointerEvents="none">
+        <View style={styles.expBadge}>
+          <Text style={styles.expBadgeText}>⭐ LV.{p.level || 1}</Text>
+        </View>
+        <View style={styles.expTrack}>
+          <View style={[styles.expFill, { width: `${expRatio * 100}%` }]} />
+        </View>
+        <Text style={styles.expText}>
+          {p.exp || 0}/{p.expToNextLevel || 50} EXP
+        </Text>
+      </View>
+
+      {/* Floating Damage Text Popups */}
+      {width && height && battleRoyaleEngine.floatingTexts.map((ft) => {
+        const sx = ft.x - battleRoyaleEngine.camera.x + width / 2 + (battleRoyaleEngine.camera.shakeX || 0);
+        const sy = ft.y - battleRoyaleEngine.camera.y + height / 2 + (battleRoyaleEngine.camera.shakeY || 0);
+        return (
+          <View
+            key={ft.id}
+            pointerEvents="none"
+            style={[
+              styles.floatingBox,
+              {
+                left: sx - 40,
+                top: sy,
+                opacity: Math.min(1, ft.life / 8),
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.floatingTxt,
+                { color: ft.color || '#ffffff' },
+                ft.isCrit && styles.floatingTxtCrit,
+              ]}
+            >
+              {ft.text}
+            </Text>
+          </View>
+        );
+      })}
 
       {/* Bottom Status: Health & Armor */}
       <View style={styles.bottomStats} pointerEvents="none">
@@ -295,5 +339,63 @@ const styles = StyleSheet.create({
   },
   ammoReloading: {
     color: '#ff9800',
+  },
+  expBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+    paddingHorizontal: 8,
+  },
+  expBadge: {
+    backgroundColor: '#0288d1',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#4fc3f7',
+  },
+  expBadgeText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  expTrack: {
+    flex: 1,
+    height: 7,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    borderRadius: 4,
+    overflow: 'hidden',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 229, 255, 0.4)',
+  },
+  expFill: {
+    height: '100%',
+    backgroundColor: '#00e5ff',
+    borderRadius: 4,
+  },
+  expText: {
+    fontSize: 9,
+    color: '#81d4fa',
+    fontWeight: 'bold',
+  },
+  floatingBox: {
+    position: 'absolute',
+    width: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  floatingTxt: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0,0,0,0.9)',
+    textShadowRadius: 3,
+  },
+  floatingTxtCrit: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#ffd600',
+    textShadowColor: '#d50000',
+    textShadowRadius: 6,
   },
 });
