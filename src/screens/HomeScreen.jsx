@@ -8,11 +8,9 @@ import {
   ScrollView,
   Modal,
 } from 'react-native';
-import { usePlayerStore, SKINS_CONFIG, PETS_CONFIG } from '../store/usePlayerStore';
+import { usePlayerStore } from '../store/usePlayerStore';
 import { WEAPONS } from '../game/config/pubgWeapons';
-import { ZenGardenModal } from '../components/modals/ZenGardenModal';
 import { LuckySpinModal } from '../components/modals/LuckySpinModal';
-import { CosmeticsModal } from '../components/modals/CosmeticsModal';
 
 export const HomeScreen = ({ onStartGame }) => {
   const coins = usePlayerStore((s) => s.coins);
@@ -35,9 +33,7 @@ export const HomeScreen = ({ onStartGame }) => {
   const upgradeStat = usePlayerStore((s) => s.upgradeStat);
 
   const [armoryVisible, setArmoryVisible] = useState(false);
-  const [zenGardenVisible, setZenGardenVisible] = useState(false);
   const [luckySpinVisible, setLuckySpinVisible] = useState(false);
-  const [cosmeticsVisible, setCosmeticsVisible] = useState(false);
   const [gameMode, setGameMode] = useState('battle_royale'); // 'battle_royale' | 'boss_raid'
 
   // Compute Rank Title based on score and kills
@@ -142,32 +138,14 @@ export const HomeScreen = ({ onStartGame }) => {
             {/* Quick Feature Action Pills */}
             <View style={styles.featureRow}>
               <TouchableOpacity
-                style={styles.featurePill}
-                onPress={() => setZenGardenVisible(true)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.featureIcon}>🌻</Text>
-                <Text style={styles.featureText}>Vườn Zen</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.featurePill, styles.spinPill]}
+                style={[styles.featurePill, styles.spinPill, { flex: 1 }]}
                 onPress={() => setLuckySpinVisible(true)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.featureIcon}>🎰</Text>
                 <Text style={styles.featureText}>
-                  Vòng Quay {canFreeSpin() ? '🎁' : ''}
+                  Vòng Quay May Mắn {canFreeSpin() ? '🎁' : ''}
                 </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.featurePill, styles.cosmeticsPill]}
-                onPress={() => setCosmeticsVisible(true)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.featureIcon}>✨</Text>
-                <Text style={styles.featureText}>Ngoại Trang</Text>
               </TouchableOpacity>
             </View>
 
@@ -436,22 +414,10 @@ export const HomeScreen = ({ onStartGame }) => {
           </View>
         )}
 
-        {/* Zen Garden Modal */}
-        <ZenGardenModal
-          visible={zenGardenVisible}
-          onClose={() => setZenGardenVisible(false)}
-        />
-
         {/* Lucky Wheel Modal */}
         <LuckySpinModal
           visible={luckySpinVisible}
           onClose={() => setLuckySpinVisible(false)}
-        />
-
-        {/* Cosmetics & Pets Modal */}
-        <CosmeticsModal
-          visible={cosmeticsVisible}
-          onClose={() => setCosmeticsVisible(false)}
         />
       </View>
     </ImageBackground>

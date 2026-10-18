@@ -349,11 +349,6 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
               snoutColor = '#4dd0e1';
             }
 
-            // Pet position
-            const orbit = ((Date.now() / 800) % (Math.PI * 2));
-            const petX = player.x + Math.cos(orbit) * 44;
-            const petY = player.y + Math.sin(orbit) * 44;
-
             return (
               <Group>
                 {/* Shadow */}
@@ -458,43 +453,6 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
                   color="#111111"
                 />
 
-                {/* Orbiting Pet Companion */}
-                {player.pet && (
-                  <Group>
-                    {/* Pet Shadow */}
-                    <Circle cx={petX} cy={petY + 6} r={10} color="rgba(0,0,0,0.25)" />
-
-                    {player.pet === 'mini_sunflower' && (
-                      <Group>
-                        <Circle cx={petX} cy={petY} r={14} color="#fbc02d" />
-                        <Circle cx={petX} cy={petY} r={8} color="#fff59d" />
-                      </Group>
-                    )}
-
-                    {player.pet === 'mini_wallnut' && (
-                      <Group>
-                        <Circle cx={petX} cy={petY} r={13} color="#8d6e63" />
-                        {player.wallnutShieldActive && (
-                          <Circle
-                            cx={player.x}
-                            cy={player.y}
-                            r={player.radius * 1.55}
-                            color="#ffd54f"
-                            style="stroke"
-                            strokeWidth={3}
-                          />
-                        )}
-                      </Group>
-                    )}
-
-                    {player.pet === 'mini_shroom' && (
-                      <Group>
-                        <Circle cx={petX} cy={petY} r={12} color="#ab47bc" />
-                        <Circle cx={petX} cy={petY + 4} r={6} color="#e1bee7" />
-                      </Group>
-                    )}
-                  </Group>
-                )}
               </Group>
             );
           })()}

@@ -243,19 +243,10 @@
               <span class="btn-text">Tủ Đồ & Vũ Khí</span>
               <span class="btn-badge-alert" id="lobbyArmoryAlert">SẴN SÀNG</span>
             </button>
-            <button class="lobby-nav-btn" id="lobbyZenBtn" style="border-color: #81c784; background: rgba(46, 125, 50, 0.35);">
-              <span class="btn-emoji">🌻</span>
-              <span class="btn-text">Vườn Zen (AFK)</span>
-              <span class="btn-badge-alert" id="lobbyZenAlert" style="background:#4caf50;">THU HOẠCH</span>
-            </button>
             <button class="lobby-nav-btn" id="lobbySpinBtn" style="border-color: #ce93d8; background: rgba(123, 31, 162, 0.35);">
               <span class="btn-emoji">🎰</span>
               <span class="btn-text">Vòng Quay May Mắn</span>
               <span class="btn-badge-alert" id="lobbySpinAlert" style="background:#ab47bc;">FREE 🎁</span>
-            </button>
-            <button class="lobby-nav-btn" id="lobbyCosmeticsBtn" style="border-color: #90caf9; background: rgba(25, 118, 210, 0.35);">
-              <span class="btn-emoji">✨</span>
-              <span class="btn-text">Ngoại Trang & Pet</span>
             </button>
             <button class="lobby-nav-btn" id="lobbyStatsBtn">
               <span class="btn-emoji">⚡</span>
@@ -644,39 +635,7 @@
       </div>
     </div>
 
-    <!-- 3. VƯỜN ZEN MODAL (AFK HARVEST) -->
-    <div class="survival-modal" id="zenGardenModal" style="display: none; position: fixed; inset: 0; background: rgba(5,15,10,0.88); z-index: 10000; align-items: center; justify-content: center;">
-      <div style="width: 680px; max-width: 95%; max-height: 90vh; background: #1b3022; border: 2px solid #4caf50; border-radius: 20px; padding: 20px; color: #fff; box-shadow: 0 0 25px rgba(76,175,80,0.4); display: flex; flex-direction: column;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(76,175,80,0.3); padding-bottom: 10px; margin-bottom: 12px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 28px;">🌻</span>
-            <div>
-              <h2 style="margin: 0; font-size: 18px; color: #a5d6a7;">VƯỜN ZEN SINH THÁI</h2>
-              <small style="color: #81c784;">Tích luỹ Xu & Não tự động khi Offline (Tối đa 12h)</small>
-            </div>
-          </div>
-          <button id="closeZenModalBtn" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 16px; cursor: pointer; font-weight: bold;">✕</button>
-        </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(20,50,30,0.85); border: 1px solid #81c784; border-radius: 14px; padding: 12px; margin-bottom: 12px;">
-          <div>
-            <div style="font-size: 12px; color: #e8f5e9; margin-bottom: 4px;">⏱️ Thời gian tích luỹ: <b style="color: #ffd54f;" id="zenElapsedHours">0.0 giờ</b></div>
-            <div style="display: flex; gap: 10px;">
-              <span style="background: rgba(255,213,79,0.2); border: 1px solid #ffd54f; border-radius: 8px; padding: 3px 8px; font-size: 13px; font-weight: bold; color: #ffd54f;" id="zenCoinsReward">+0 Xu</span>
-              <span style="background: rgba(244,143,177,0.2); border: 1px solid #f48fb1; border-radius: 8px; padding: 3px 8px; font-size: 13px; font-weight: bold; color: #f48fb1;" id="zenBrainsReward">+0 Não</span>
-            </div>
-          </div>
-          <button id="harvestZenBtn" style="background: #ffb300; border: none; padding: 10px 18px; border-radius: 12px; font-weight: 900; color: #000; cursor: pointer; box-shadow: 0 4px 12px rgba(255,179,0,0.4);">
-            🌻 THU HOẠCH NGAY
-          </button>
-        </div>
-
-        <div style="font-size: 12px; font-weight: bold; color: #c8e6c9; margin-bottom: 8px;">🌱 CÁC CHẬU CÂY TRONG VƯỜN</div>
-        <div id="zenPlotsContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto;">
-          <!-- Plots rendered via JS -->
-        </div>
-      </div>
-    </div>
 
     <!-- 4. VÒNG QUAY MAY MẮN MODAL -->
     <div class="survival-modal" id="luckyWheelModal" style="display: none; position: fixed; inset: 0; background: rgba(5,5,15,0.9); z-index: 10000; align-items: center; justify-content: center;">
@@ -726,36 +685,7 @@
       </div>
     </div>
 
-    <!-- 5. NGOẠI TRANG & THÚ CƯNG MODAL -->
-    <div class="survival-modal" id="cosmeticsModal" style="display: none; position: fixed; inset: 0; background: rgba(5,10,20,0.9); z-index: 10000; align-items: center; justify-content: center;">
-      <div style="width: 700px; max-width: 95%; max-height: 90vh; background: #131e33; border: 2px solid #3f51b5; border-radius: 20px; padding: 20px; color: #fff; box-shadow: 0 0 25px rgba(63,81,181,0.5); display: flex; flex-direction: column;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(63,81,181,0.3); padding-bottom: 10px; margin-bottom: 12px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 28px;">✨</span>
-            <div>
-              <h2 style="margin: 0; font-size: 18px; color: #e8eaf6;">NGOẠI TRANG & TRỢ THỦ</h2>
-              <small style="color: #9fa8da;">Tùy biến skin nhân vật & thú cưng đồng hành trong trận</small>
-            </div>
-          </div>
-          <button id="closeCosmeticsModalBtn" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 16px; cursor: pointer; font-weight: bold;">✕</button>
-        </div>
 
-        <!-- Tab buttons -->
-        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-          <button id="tabSkinsBtn" style="flex: 1; padding: 9px; border-radius: 10px; border: 1px solid #7986cb; background: #3949ab; color: #fff; font-weight: 800; cursor: pointer;">
-            👕 NGOẠI TRANG CHIẾN BINH
-          </button>
-          <button id="tabPetsBtn" style="flex: 1; padding: 9px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06); color: #9fa8da; font-weight: 800; cursor: pointer;">
-            🐾 THÚ CƯNG ĐỒNG HÀNH
-          </button>
-        </div>
-
-        <!-- Cards Container -->
-        <div id="cosmeticsCardsContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto;">
-          <!-- Items rendered via JS -->
-        </div>
-      </div>
-    </div>
 
     <!-- 6. ROGUELIKE LEVEL-UP PERK SELECTION MODAL -->
     <div id="pubgPerkModal" style="display: none; position: fixed; inset: 0; background: rgba(5,15,5,0.92); z-index: 10001; align-items: center; justify-content: center; flex-direction: column;">

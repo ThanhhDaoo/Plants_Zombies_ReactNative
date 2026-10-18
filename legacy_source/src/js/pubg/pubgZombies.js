@@ -396,21 +396,6 @@ export function damagePlayer(dmg) {
   const p = pubgState.player;
   if (p.health <= 0) return;
 
-  // Wall-nut Shield Block
-  if (inventory.data.selectedPet === 'mini_wallnut' && p.wallnutShieldActive) {
-    p.wallnutShieldActive = false;
-    p.wallnutCooldown = 12000;
-    pubgState.floatingTexts.push({
-      x: p.x,
-      y: p.y - 25,
-      text: '🥥 SHIELD BLOCK!',
-      color: '#ffd54f',
-      life: 50,
-      vy: -1.2,
-    });
-    return;
-  }
-
   if (p.armor > 0) {
     const armorDamage = Math.min(p.armor, dmg * 0.65);
     p.armor -= armorDamage;

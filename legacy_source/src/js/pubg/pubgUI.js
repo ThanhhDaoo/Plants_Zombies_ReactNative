@@ -1,4 +1,4 @@
-import { inventory, SKINS_CONFIG, PETS_CONFIG } from './pubgInventory.js';
+import { inventory } from './pubgInventory.js';
 import { WEAPONS } from './pubgWeapons.js';
 import { startPubgGame, stopPubg } from './pubgGame.js';
 import { initAudio, toggleAudio, isAudioEnabled } from '../sound.js';
@@ -7,9 +7,7 @@ export function setupSurvivalUI() {
   renderLobbyStats();
   setupLobbyEvents();
   setupArmoryEvents();
-  setupZenGardenEvents();
   setupLuckyWheelEvents();
-  setupCosmeticsEvents();
   setupModeSwitchEvents();
 }
 
@@ -737,95 +735,7 @@ function setupArmoryEvents() {
   }
 }
 
-// ==========================================
-// 1. ZEN GARDEN SYSTEM (AFK REWARDS)
-// ==========================================
-function setupZenGardenEvents() {
-  const zenBtn = document.getElementById('lobbyZenBtn');
-  const zenModal = document.getElementById('zenGardenModal');
-  const closeBtn = document.getElementById('closeZenModalBtn');
-  const harvestBtn = document.getElementById('harvestZenBtn');
 
-  if (zenBtn && zenModal) {
-    zenBtn.addEventListener('click', () => {
-      initAudio();
-      renderZenGarden();
-      zenModal.style.display = 'flex';
-    });
-  }
-
-  if (closeBtn && zenModal) {
-    closeBtn.addEventListener('click', () => {
-      zenModal.style.display = 'none';
-      renderLobbyStats();
-    });
-  }
-
-  if (harvestBtn) {
-    harvestBtn.addEventListener('click', () => {
-      const res = inventory.harvestZenGarden();
-      if (res.coins > 0 || res.brains > 0) {
-        alert(`🎉 Thu hoạch thành công: +${res.coins} 🪙 và +${res.brains} 🧠!`);
-        renderZenGarden();
-        renderLobbyStats();
-      }
-    });
-  }
-}
-
-function renderZenGarden() {
-  const rewards = inventory.getZenRewards();
-  const elapsedEl = document.getElementById('zenElapsedHours');
-  if (elapsedEl) elapsedEl.textContent = `${rewards.elapsedHours} giờ`;
-
-  const coinsEl = document.getElementById('zenCoinsReward');
-  if (coinsEl) coinsEl.textContent = `+${rewards.coins} Xu`;
-
-  const brainsEl = document.getElementById('zenBrainsReward');
-  if (brainsEl) brainsEl.textContent = `+${rewards.brains} Não`;
-
-  const container = document.getElementById('zenPlotsContainer');
-  if (!container) return;
-
-  const zg = inventory.data.zenGarden;
-  container.innerHTML = '';
-
-  zg.plots.forEach((plot, idx) => {
-    const upgradeCost = plot.level * 120;
-    const canUpgrade = plot.level < 5 && inventory.getCoins() >= upgradeCost;
-
-    const div = document.createElement('div');
-    div.style.cssText = 'background: rgba(10,30,20,0.7); border: 1px solid rgba(76,175,80,0.3); border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 10px;';
-    div.innerHTML = `
-      <div style="width: 44px; height: 44px; border-radius: 22px; background: rgba(76,175,80,0.25); border: 1px solid #4caf50; display: flex; align-items: center; justify-content: center; font-size: 22px;">
-        ${plot.emoji}
-      </div>
-      <div style="flex: 1;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <b style="font-size: 13px; color: #fff;">${plot.name}</b>
-          <span style="background: #388e3c; border-radius: 6px; padding: 1px 6px; font-size: 10px; font-weight: bold;">Cấp ${plot.level}/5</span>
-        </div>
-        <div style="font-size: 11px; color: #a5d6a7; margin: 3px 0;">
-          +${plot.coinRate * plot.level} 🪙/h ${plot.brainRate > 0 ? `• +${(plot.brainRate * plot.level).toFixed(1)} 🧠/h` : ''}
-        </div>
-        <button class="zen-upgrade-btn" data-index="${idx}" style="background: ${canUpgrade ? '#4caf50' : '#424242'}; border: none; padding: 4px 10px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: bold; cursor: ${canUpgrade ? 'pointer' : 'not-allowed'}; opacity: ${canUpgrade ? '1' : '0.6'};">
-          ${plot.level >= 5 ? '★ TỐI ĐA' : `Nâng Cấp: ${upgradeCost} 🪙`}
-        </button>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-
-  container.querySelectorAll('.zen-upgrade-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const idx = parseInt(btn.dataset.index, 10);
-      if (inventory.upgradeZenPlot(idx)) {
-        renderZenGarden();
-        renderLobbyStats();
-      }
-    });
-  });
-}
 
 // ==========================================
 // 2. LUCKY WHEEL SYSTEM (ROULETTE)
@@ -967,168 +877,7 @@ function renderLuckyWheel() {
   }
 }
 
-// ==========================================
-// 3. COSMETICS & PETS SYSTEM
-// ==========================================
-let activeCosmeticTab = 'skins';
 
-function setupCosmeticsEvents() {
-  const cosmBtn = document.getElementById('lobbyCosmeticsBtn');
-  const cosmModal = document.getElementById('cosmeticsModal');
-  const closeBtn = document.getElementById('closeCosmeticsModalBtn');
-  const tabSkins = document.getElementById('tabSkinsBtn');
-  const tabPets = document.getElementById('tabPetsBtn');
-
-  if (cosmBtn && cosmModal) {
-    cosmBtn.addEventListener('click', () => {
-      initAudio();
-      renderCosmetics();
-      cosmModal.style.display = 'flex';
-    });
-  }
-
-  if (closeBtn && cosmModal) {
-    closeBtn.addEventListener('click', () => {
-      cosmModal.style.display = 'none';
-      renderLobbyStats();
-    });
-  }
-
-  if (tabSkins && tabPets) {
-    tabSkins.addEventListener('click', () => {
-      activeCosmeticTab = 'skins';
-      tabSkins.style.background = '#3949ab';
-      tabSkins.style.borderColor = '#7986cb';
-      tabSkins.style.color = '#fff';
-      tabPets.style.background = 'rgba(255,255,255,0.06)';
-      tabPets.style.borderColor = 'rgba(255,255,255,0.1)';
-      tabPets.style.color = '#9fa8da';
-      renderCosmetics();
-    });
-
-    tabPets.addEventListener('click', () => {
-      activeCosmeticTab = 'pets';
-      tabPets.style.background = '#ff8f00';
-      tabPets.style.borderColor = '#ffb300';
-      tabPets.style.color = '#fff';
-      tabSkins.style.background = 'rgba(255,255,255,0.06)';
-      tabSkins.style.borderColor = 'rgba(255,255,255,0.1)';
-      tabSkins.style.color = '#9fa8da';
-      renderCosmetics();
-    });
-  }
-}
-
-function renderCosmetics() {
-  const container = document.getElementById('cosmeticsCardsContainer');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const coins = inventory.getCoins();
-
-  if (activeCosmeticTab === 'skins') {
-    Object.values(SKINS_CONFIG).forEach((skin) => {
-      const isUnlocked = inventory.data.unlockedSkins.includes(skin.id);
-      const isEquipped = inventory.data.selectedSkin === skin.id;
-      const canAfford = coins >= skin.cost;
-
-      const card = document.createElement('div');
-      card.style.cssText = `background: rgba(20,30,50,0.7); border: 1.5px solid ${isEquipped ? '#4caf50' : 'rgba(63,81,181,0.3)'}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;`;
-      card.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-          <div style="width: 44px; height: 44px; border-radius: 22px; background: rgba(63,81,181,0.25); border: 1px solid #5c6bc0; display: flex; align-items: center; justify-content: center; font-size: 22px;">
-            ${skin.emoji}
-          </div>
-          <div>
-            <b style="color: #fff; font-size: 13px;">${skin.name}</b>
-            <div style="color: #90caf9; font-size: 10px; margin-top: 2px;">${skin.desc}</div>
-          </div>
-        </div>
-        <div>
-          ${isEquipped
-            ? '<button style="width: 100%; background: #388e3c; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: 900; font-size: 11px;">✓ ĐANG DÙNG</button>'
-            : isUnlocked
-            ? `<button class="skin-equip-btn" data-id="${skin.id}" style="width: 100%; background: #1e88e5; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 11px; cursor: pointer;">TRANG BỊ</button>`
-            : `<button class="skin-buy-btn" data-id="${skin.id}" style="width: 100%; background: ${canAfford ? '#ff9800' : '#424242'}; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 11px; cursor: ${canAfford ? 'pointer' : 'not-allowed'};">MỞ KHÓA (${skin.cost} 🪙)</button>`
-          }
-        </div>
-      `;
-      container.appendChild(card);
-    });
-
-    container.querySelectorAll('.skin-equip-btn').forEach((b) => {
-      b.addEventListener('click', () => {
-        inventory.selectSkin(b.dataset.id);
-        renderCosmetics();
-        renderLobbyStats();
-      });
-    });
-
-    container.querySelectorAll('.skin-buy-btn').forEach((b) => {
-      b.addEventListener('click', () => {
-        if (inventory.unlockSkin(b.dataset.id)) {
-          renderCosmetics();
-          renderLobbyStats();
-        }
-      });
-    });
-  } else {
-    // Pets
-    Object.values(PETS_CONFIG).forEach((pet) => {
-      const isUnlocked = inventory.data.unlockedPets.includes(pet.id);
-      const isEquipped = inventory.data.selectedPet === pet.id;
-      const canAfford = coins >= pet.cost;
-
-      const card = document.createElement('div');
-      card.style.cssText = `background: rgba(20,30,50,0.7); border: 1.5px solid ${isEquipped ? '#4caf50' : 'rgba(255,179,0,0.3)'}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;`;
-      card.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-          <div style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,179,0,0.25); border: 1px solid #ffb300; display: flex; align-items: center; justify-content: center; font-size: 22px;">
-            ${pet.emoji}
-          </div>
-          <div>
-            <b style="color: #fff; font-size: 13px;">${pet.name}</b>
-            <div style="color: #ffe082; font-size: 10px; margin-top: 2px;">${pet.desc}</div>
-          </div>
-        </div>
-        <div>
-          ${isEquipped
-            ? `<button class="pet-unequip-btn" style="width: 100%; background: #558b2f; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 10px; cursor: pointer;">✓ ĐANG DÙNG (BỎ CHỌN)</button>`
-            : isUnlocked
-            ? `<button class="pet-equip-btn" data-id="${pet.id}" style="width: 100%; background: #1e88e5; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 11px; cursor: pointer;">ĐỒNG HÀNH</button>`
-            : `<button class="pet-buy-btn" data-id="${pet.id}" style="width: 100%; background: ${canAfford ? '#ff9800' : '#424242'}; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 11px; cursor: ${canAfford ? 'pointer' : 'not-allowed'};">MỞ KHÓA (${pet.cost} 🪙)</button>`
-          }
-        </div>
-      `;
-      container.appendChild(card);
-    });
-
-    container.querySelectorAll('.pet-equip-btn').forEach((b) => {
-      b.addEventListener('click', () => {
-        inventory.selectPet(b.dataset.id);
-        renderCosmetics();
-        renderLobbyStats();
-      });
-    });
-
-    container.querySelectorAll('.pet-unequip-btn').forEach((b) => {
-      b.addEventListener('click', () => {
-        inventory.selectPet(null);
-        renderCosmetics();
-        renderLobbyStats();
-      });
-    });
-
-    container.querySelectorAll('.pet-buy-btn').forEach((b) => {
-      b.addEventListener('click', () => {
-        if (inventory.unlockPet(b.dataset.id)) {
-          renderCosmetics();
-          renderLobbyStats();
-        }
-      });
-    });
-  }
-}
 
 // ==========================================
 // 4. GAME MODE SWITCHER

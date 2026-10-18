@@ -92,13 +92,6 @@ export function startPubgGame() {
   p.chargeTimer = 0;
   p.chargeMaxAlerted = false;
 
-  // Skin & Pet setup
-  p.skin = inventory.data.selectedSkin || 'default';
-  p.pet = inventory.data.selectedPet || null;
-  p.wallnutShieldActive = p.pet === 'mini_wallnut';
-  p.wallnutCooldown = 0;
-  p.shroomTimer = 0;
-
   // Roguelike in-match Level & Perks
   p.exp = 0;
   p.level = 1;

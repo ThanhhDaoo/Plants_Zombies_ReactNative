@@ -9,11 +9,7 @@ export const SKINS_CONFIG = {
   arctic: { id: 'arctic', name: 'Đậu Bắc Cực', emoji: '❄️', cost: 650, desc: 'Hào quang sương giá, làm chậm quái tiếp cận' },
 };
 
-export const PETS_CONFIG = {
-  mini_sunflower: { id: 'mini_sunflower', name: 'Sunflower Nhí', emoji: '🌻', cost: 400, desc: 'Bay theo nhặt xu và não trong bán kính 200px' },
-  mini_wallnut: { id: 'mini_wallnut', name: 'Wall-nut Bảo Hộ', emoji: '🥥', cost: 600, desc: 'Khiên óc chó xoay quanh đỡ 1 đòn cắn mỗi 12 giây' },
-  mini_shroom: { id: 'mini_shroom', name: 'Nấm Độc Mini', emoji: '🍄', cost: 500, desc: 'Phun đám khói độc làm chậm kẻ thù bám đuổi' },
-};
+
 
 export const usePlayerStore = create((set, get) => ({
   coins: 450,
@@ -42,79 +38,12 @@ export const usePlayerStore = create((set, get) => ({
   // Skins & Pets
   selectedSkin: 'default',
   unlockedSkins: ['default'],
-  selectedPet: null,
-  unlockedPets: [],
 
-  // Zen Garden (Idle AFK Rewards)
-  zenGarden: {
-    lastHarvest: Date.now() - 3600 * 1000 * 2.5, // 2.5h accumulated initially for instant fun
-    plots: [
-      { id: 'sunflower', name: 'Hoa Hướng Dương', emoji: '🌻', level: 1, coinRate: 30, brainRate: 0 },
-      { id: 'marigold', name: 'Cúc Vạn Thọ', emoji: '🌼', level: 1, coinRate: 45, brainRate: 0 },
-      { id: 'nightshroom', name: 'Nấm Mặt Trăng', emoji: '🍄', level: 1, coinRate: 10, brainRate: 0.35 },
-      { id: 'goldentree', name: 'Cây Vàng Đột Biến', emoji: '🌳', level: 1, coinRate: 70, brainRate: 0.6 },
-    ],
-  },
 
   // Lucky Wheel
   lastSpinTime: 0,
 
-  // Calculate accumulated Zen Garden rewards
-  getZenRewards: () => {
-    const zg = get().zenGarden;
-    const now = Date.now();
-    const elapsedHours = Math.min(12, Math.max(0, (now - zg.lastHarvest) / (1000 * 3600)));
 
-    let totalCoins = 0;
-    let totalBrains = 0;
-
-    for (const plot of zg.plots) {
-      totalCoins += plot.coinRate * plot.level * elapsedHours;
-      totalBrains += plot.brainRate * plot.level * elapsedHours;
-    }
-
-    return {
-      coins: Math.floor(totalCoins),
-      brains: Math.floor(totalBrains),
-      elapsedHours: elapsedHours.toFixed(1),
-    };
-  },
-
-  harvestZenGarden: () => {
-    const rewards = get().getZenRewards();
-    if (rewards.coins <= 0 && rewards.brains <= 0) return { coins: 0, brains: 0 };
-
-    set((state) => ({
-      coins: state.coins + rewards.coins,
-      brains: state.brains + rewards.brains,
-      zenGarden: {
-        ...state.zenGarden,
-        lastHarvest: Date.now(),
-      },
-    }));
-
-    return rewards;
-  },
-
-  upgradeZenPlot: (index) => {
-    const state = get();
-    const plot = state.zenGarden.plots[index];
-    if (!plot || plot.level >= 5) return false;
-    const cost = plot.level * 120;
-    if (state.coins >= cost) {
-      const newPlots = [...state.zenGarden.plots];
-      newPlots[index] = { ...plot, level: plot.level + 1 };
-      set({
-        coins: state.coins - cost,
-        zenGarden: {
-          ...state.zenGarden,
-          plots: newPlots,
-        },
-      });
-      return true;
-    }
-    return false;
-  },
 
   // Lucky Spin
   canFreeSpin: () => {
@@ -170,29 +99,7 @@ export const usePlayerStore = create((set, get) => ({
     return false;
   },
 
-  // Pets
-  selectPet: (id) => {
-    if (!id || get().unlockedPets.includes(id)) {
-      set({ selectedPet: id });
-      return true;
-    }
-    return false;
-  },
 
-  unlockPet: (id) => {
-    const state = get();
-    const config = PETS_CONFIG[id];
-    if (!config) return false;
-    if (state.coins >= config.cost && !state.unlockedPets.includes(id)) {
-      set({
-        coins: state.coins - config.cost,
-        unlockedPets: [...state.unlockedPets, id],
-        selectedPet: id,
-      });
-      return true;
-    }
-    return false;
-  },
 
   // Match Rewards
   addMatchRewards: ({ coins = 0, brains = 0, kills = 0, score = 0, isWin = false }) => {

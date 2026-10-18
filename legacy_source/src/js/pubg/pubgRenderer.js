@@ -1216,48 +1216,6 @@ function drawPlayer(ctx, p) {
     ctx.fill();
   }
 
-  // 8. Pet Companion floating beside player
-  if (p.pet) {
-    ctx.save();
-    const petAngle = (Date.now() * 0.002) % (Math.PI * 2);
-    const petDist = r + 24;
-    const petX = Math.cos(petAngle) * petDist;
-    const petY = Math.sin(petAngle) * petDist;
-
-    ctx.translate(petX, petY);
-
-    if (p.pet === 'mini_sunflower') {
-      ctx.beginPath();
-      ctx.arc(0, 0, 11, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffd54f';
-      ctx.shadowColor = '#ffb300';
-      ctx.shadowBlur = 10;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(0, 0, 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#795548';
-      ctx.fill();
-    } else if (p.pet === 'mini_wallnut') {
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 10, 12, 0, 0, Math.PI * 2);
-      ctx.fillStyle = '#8d6e63';
-      ctx.shadowColor = '#4fc3f7';
-      ctx.shadowBlur = p.wallnutShieldActive ? 12 : 2;
-      ctx.fill();
-      ctx.strokeStyle = '#4fc3f7';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    } else if (p.pet === 'mini_cattail') {
-      ctx.beginPath();
-      ctx.arc(0, 0, 9, 0, Math.PI * 2);
-      ctx.fillStyle = '#f48fb1';
-      ctx.fill();
-      ctx.fillStyle = '#4caf50';
-      ctx.fillRect(-2, 8, 4, 8);
-    }
-    ctx.restore();
-  }
-
   ctx.restore();
 }
 

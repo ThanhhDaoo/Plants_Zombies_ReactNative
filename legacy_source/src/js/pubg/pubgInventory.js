@@ -3,19 +3,7 @@ import { WEAPONS } from './pubgWeapons.js';
 
 const STORAGE_KEY = 'pvz_survival_save_v1';
 
-export const SKINS_CONFIG = {
-  default: { id: 'default', name: 'Đậu Tân Binh', emoji: '🌱', cost: 0, desc: 'Chiến binh đậu nguyên bản' },
-  ninja: { id: 'ninja', name: 'Đậu Ninja', emoji: '🥷', cost: 350, desc: 'Lướt né để lại khúc gỗ thế thân, +10% tốc độ chạy' },
-  cowboy: { id: 'cowboy', name: 'Đậu Cao Bồi', emoji: '🤠', cost: 500, desc: 'Đội mũ phớt miền tây, tăng +15% sát thương súng lục' },
-  cyberpunk: { id: 'cyberpunk', name: 'Đậu Cyberpunk', emoji: '⚡', cost: 800, desc: 'Giáp công nghệ neon, tăng +20 Giáp khởi đầu' },
-  arctic: { id: 'arctic', name: 'Đậu Bắc Cực', emoji: '❄️', cost: 650, desc: 'Hào quang sương giá, làm chậm quái tiếp cận' },
-};
 
-export const PETS_CONFIG = {
-  mini_sunflower: { id: 'mini_sunflower', name: 'Sunflower Nhí', emoji: '🌻', cost: 400, desc: 'Bay theo nhặt xu và não trong bán kính 240px' },
-  mini_wallnut: { id: 'mini_wallnut', name: 'Wall-nut Bảo Hộ', emoji: '🥥', cost: 600, desc: 'Khiên óc chó xoay quanh đỡ 1 đòn cắn mỗi 12 giây' },
-  mini_shroom: { id: 'mini_shroom', name: 'Nấm Độc Mini', emoji: '🍄', cost: 500, desc: 'Phun đám khói độc làm chậm kẻ thù bám đuổi' },
-};
 
 // Default player progression state
 const DEFAULT_DATA = {
@@ -40,21 +28,8 @@ const DEFAULT_DATA = {
     speedLevel: 1,       // Base: 4.6, +0.3 per lvl (max 5)
     magnetLevel: 1       // Base: 50px, +30px per lvl (max 5)
   },
-  selectedSkin: 'default',
-  unlockedSkins: ['default'],
-  selectedPet: null,
-  unlockedPets: [],
   lastSpinTime: 0,
   gameMode: 'battle_royale', // 'battle_royale' | 'boss_raid'
-  zenGarden: {
-    lastHarvest: Date.now() - 3600 * 1000 * 2.5,
-    plots: [
-      { id: 'sunflower', name: 'Hoa Hướng Dương', emoji: '🌻', level: 1, coinRate: 30, brainRate: 0 },
-      { id: 'marigold', name: 'Cúc Vạn Thọ', emoji: '🌼', level: 1, coinRate: 45, brainRate: 0 },
-      { id: 'nightshroom', name: 'Nấm Mặt Trăng', emoji: '🍄', level: 1, coinRate: 10, brainRate: 0.35 },
-      { id: 'goldentree', name: 'Cây Vàng Đột Biến', emoji: '🌳', level: 1, coinRate: 70, brainRate: 0.6 },
-    ],
-  },
 };
 
 class InventoryManager {
@@ -72,7 +47,6 @@ class InventoryManager {
           ...parsed,
           weaponLevels: { ...DEFAULT_DATA.weaponLevels, ...(parsed.weaponLevels || {}) },
           stats: { ...DEFAULT_DATA.stats, ...(parsed.stats || {}) },
-          zenGarden: { ...DEFAULT_DATA.zenGarden, ...(parsed.zenGarden || {}) },
         };
       }
     } catch (e) {
@@ -229,52 +203,7 @@ class InventoryManager {
     };
   }
 
-  // Zen Garden methods
-  getZenRewards() {
-    const zg = this.data.zenGarden || DEFAULT_DATA.zenGarden;
-    const now = Date.now();
-    const elapsedHours = Math.min(12, Math.max(0, (now - (zg.lastHarvest || now)) / (1000 * 3600)));
 
-    let totalCoins = 0;
-    let totalBrains = 0;
-
-    for (const plot of zg.plots) {
-      totalCoins += plot.coinRate * plot.level * elapsedHours;
-      totalBrains += plot.brainRate * plot.level * elapsedHours;
-    }
-
-    return {
-      coins: Math.floor(totalCoins),
-      brains: Math.floor(totalBrains),
-      elapsedHours: elapsedHours.toFixed(1),
-    };
-  }
-
-  harvestZenGarden() {
-    const rewards = this.getZenRewards();
-    if (rewards.coins <= 0 && rewards.brains <= 0) return { coins: 0, brains: 0 };
-
-    this.data.coins += rewards.coins;
-    this.data.brains += rewards.brains;
-    if (!this.data.zenGarden) this.data.zenGarden = { ...DEFAULT_DATA.zenGarden };
-    this.data.zenGarden.lastHarvest = Date.now();
-    this.saveData();
-
-    return rewards;
-  }
-
-  upgradeZenPlot(index) {
-    const plot = this.data.zenGarden?.plots?.[index];
-    if (!plot || plot.level >= 5) return false;
-    const cost = plot.level * 120;
-    if (this.data.coins >= cost) {
-      this.data.coins -= cost;
-      plot.level++;
-      this.saveData();
-      return true;
-    }
-    return false;
-  }
 
   // Lucky Wheel
   canFreeSpin() {
@@ -303,52 +232,6 @@ class InventoryManager {
     this.saveData();
 
     return { prize: won, index: randomIndex };
-  }
-
-  // Skins
-  selectSkin(id) {
-    if (this.data.unlockedSkins.includes(id)) {
-      this.data.selectedSkin = id;
-      this.saveData();
-      return true;
-    }
-    return false;
-  }
-
-  unlockSkin(id) {
-    const config = SKINS_CONFIG[id];
-    if (!config) return false;
-    if (this.data.coins >= config.cost && !this.data.unlockedSkins.includes(id)) {
-      this.data.coins -= config.cost;
-      this.data.unlockedSkins.push(id);
-      this.data.selectedSkin = id;
-      this.saveData();
-      return true;
-    }
-    return false;
-  }
-
-  // Pets
-  selectPet(id) {
-    if (!id || this.data.unlockedPets.includes(id)) {
-      this.data.selectedPet = id;
-      this.saveData();
-      return true;
-    }
-    return false;
-  }
-
-  unlockPet(id) {
-    const config = PETS_CONFIG[id];
-    if (!config) return false;
-    if (this.data.coins >= config.cost && !this.data.unlockedPets.includes(id)) {
-      this.data.coins -= config.cost;
-      this.data.unlockedPets.push(id);
-      this.data.selectedPet = id;
-      this.saveData();
-      return true;
-    }
-    return false;
   }
 }
 
