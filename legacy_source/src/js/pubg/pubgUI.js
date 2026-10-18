@@ -924,43 +924,68 @@ function setupModeSwitchEvents() {
 }
 
 // ==========================================
-// 5. ROGUELIKE PERK MUTATION MODAL
+// 5. ROGUELIKE PERK MUTATION MODAL & HUD BADGE
 // ==========================================
-export function showWebPerkModal(choices, onChoose) {
+export function updatePerkClaimBadge(pendingCount) {
+  const badge = document.getElementById('pubgPerkClaimBadge');
+  const txt = document.getElementById('pubgPerkClaimTxt');
+  if (!badge) return;
+
+  if (pendingCount > 0) {
+    if (txt) {
+      txt.textContent = pendingCount === 1 ? 'LÊN CẤP (+1)' : `LÊN CẤP (+${pendingCount})`;
+    }
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+export function showWebPerkModal(choices, onChoose, remainingCount = 1, onCloseLater) {
   const modal = document.getElementById('pubgPerkModal');
   const row = document.getElementById('perkCardsRow');
+  const remainingBadge = document.getElementById('perkRemainingBadge');
+  const closeLaterBtn = document.getElementById('perkCloseLaterBtn');
   if (!modal || !row) return;
+
+  if (remainingBadge) {
+    if (remainingCount > 1) {
+      remainingBadge.textContent = `Còn ${remainingCount} lượt`;
+      remainingBadge.style.display = 'inline-block';
+    } else {
+      remainingBadge.style.display = 'none';
+    }
+  }
+
+  if (closeLaterBtn) {
+    closeLaterBtn.onclick = (e) => {
+      e.stopPropagation();
+      modal.style.display = 'none';
+      if (onCloseLater) onCloseLater();
+    };
+  }
 
   row.innerHTML = '';
   choices.forEach((perk) => {
     const card = document.createElement('div');
-    card.style.cssText = `
-      flex: 1; min-width: 170px; max-width: 220px;
-      background: linear-gradient(180deg, #1b381e, #0e2012);
-      border: 2.5px solid ${perk.color || '#4caf50'};
-      border-radius: 18px; padding: 18px 14px; text-align: center;
-      cursor: pointer; transition: all 0.2s ease;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    `;
+    card.className = 'perk-card-item';
+    card.style.borderColor = perk.color || '#4caf50';
+
     card.innerHTML = `
-      <div style="font-size: 40px; margin-bottom: 8px;">${perk.icon}</div>
-      <div style="font-size: 15px; font-weight: 900; color: #fff; margin-bottom: 6px;">${perk.name}</div>
-      <div style="font-size: 11px; color: ${perk.color || '#a5d6a7'}; font-weight: 800; margin-bottom: 8px; letter-spacing: 0.5px;">★ ${perk.tier || 'CƯỜNG HÓA'} ★</div>
-      <div style="font-size: 12px; color: #c8e6c9; line-height: 1.4; min-height: 48px;">${perk.desc}</div>
-      <button style="margin-top: 14px; width: 100%; padding: 10px; border-radius: 10px; border: none; background: #4caf50; color: #fff; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 3px 10px rgba(76,175,80,0.4);">CHỌN NGAY</button>
+      <div>
+        <div class="perk-card-icon">${perk.icon}</div>
+        <div class="perk-card-name">${perk.name}</div>
+        <div class="perk-card-tier" style="color: ${perk.color || '#a5d6a7'};">★ ${perk.tier || 'CƯỜNG HÓA'} ★</div>
+      </div>
+      <div class="perk-card-desc">${perk.desc}</div>
+      <button class="perk-card-select-btn">CHỌN NGAY</button>
     `;
-    card.onmouseenter = () => {
-      card.style.transform = 'translateY(-6px) scale(1.04)';
-      card.style.boxShadow = `0 8px 25px ${perk.color || '#4caf50'}`;
-    };
-    card.onmouseleave = () => {
-      card.style.transform = 'none';
-      card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
-    };
+
     card.onclick = () => {
       modal.style.display = 'none';
       if (onChoose) onChoose(perk);
     };
+
     row.appendChild(card);
   });
 

@@ -14,7 +14,7 @@ import {
   playCherryThrowSound,
   playChargedShotSound
 } from '../sound.js';
-import { showWebPerkModal } from './pubgUI.js';
+import { showWebPerkModal, updatePerkClaimBadge } from './pubgUI.js';
 
 const PERKS_POOL = [
   { id: 'multishot', name: 'Đạn Chùm Đột Biến', icon: '🌿', desc: 'Bắn thêm +1 viên đạn phụ hình nón', color: '#66bb6a', tier: 'HIẾM' },
@@ -38,6 +38,51 @@ export function initPubg() {
   resizePubgCanvas();
   window.addEventListener('resize', resizePubgCanvas);
   setupPubgControls(pubgCanvas);
+
+  const claimBadge = document.getElementById('pubgPerkClaimBadge');
+  if (claimBadge) {
+    claimBadge.addEventListener('click', () => {
+      openPerkSelectionModal();
+    });
+  }
+}
+
+export function openPerkSelectionModal() {
+  if ((pubgState.pendingPerkPicks || 0) <= 0) return;
+  if (pubgState.isGameOver || pubgState.isVictory || !pubgState.active) return;
+
+  const p = pubgState.player;
+  const availablePerks = PERKS_POOL.filter((perk) => !(p.perks || []).includes(perk.id));
+  const choices = (availablePerks.length >= 3 ? availablePerks : PERKS_POOL)
+    .slice()
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 3);
+
+  pubgState.isPaused = true;
+  showWebPerkModal(
+    choices,
+    (selected) => {
+      if (!p.perks) p.perks = [];
+      p.perks.push(selected.id);
+      if (selected.id === 'speed') p.speed *= 1.2;
+      if (selected.id === 'ironskin') p.armor = Math.min(p.maxArmor || 100, (p.armor || 0) + 35);
+
+      pubgState.pendingPerkPicks = Math.max(0, (pubgState.pendingPerkPicks || 1) - 1);
+      updatePerkClaimBadge(pubgState.pendingPerkPicks);
+      addFloatingText(p.x, p.y - 20, `+${selected.name}`, selected.color, 14);
+
+      if (pubgState.pendingPerkPicks > 0) {
+        openPerkSelectionModal();
+      } else {
+        pubgState.isPaused = false;
+      }
+    },
+    pubgState.pendingPerkPicks,
+    () => {
+      pubgState.isPaused = false;
+      updatePerkClaimBadge(pubgState.pendingPerkPicks);
+    }
+  );
 }
 
 export function resizePubgCanvas() {
@@ -144,7 +189,11 @@ export function startPubgGame() {
   // Update HUD
   updatePubgHud();
 
-  // Hide modals
+  // Hide modals & reset pending perks
+  pubgState.pendingPerkPicks = 0;
+  updatePerkClaimBadge(0);
+  const perkModal = document.getElementById('pubgPerkModal');
+  if (perkModal) perkModal.style.display = 'none';
   document.getElementById('pubgGameOverModal').style.display = 'none';
   document.getElementById('pubgVictoryModal').style.display = 'none';
 
@@ -609,23 +658,11 @@ function handleZombieKilled(z, index) {
     p.exp -= nextExp;
     p.level = (p.level || 1) + 1;
     p.expNext = Math.floor(nextExp * 1.6);
-    addFloatingText(p.x, p.y - 30, `LEVEL UP! Lv.${p.level}`, '#ffd54f', 16);
+    addFloatingText(p.x, p.y - 30, `⭐ LÊN CẤP Lv.${p.level}!`, '#ffd54f', 16);
+    playChargedShotSound();
 
-    const availablePerks = PERKS_POOL.filter((perk) => !(p.perks || []).includes(perk.id));
-    const choices = (availablePerks.length >= 3 ? availablePerks : PERKS_POOL)
-      .slice()
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 3);
-
-    pubgState.isPaused = true;
-    showWebPerkModal(choices, (selected) => {
-      if (!p.perks) p.perks = [];
-      p.perks.push(selected.id);
-      if (selected.id === 'speed') p.speed *= 1.2;
-      if (selected.id === 'ironskin') p.armor = Math.min(p.maxArmor || 100, (p.armor || 0) + 35);
-      pubgState.isPaused = false;
-      addFloatingText(p.x, p.y - 20, `+${selected.name}`, selected.color, 14);
-    });
+    pubgState.pendingPerkPicks = (pubgState.pendingPerkPicks || 0) + 1;
+    updatePerkClaimBadge(pubgState.pendingPerkPicks);
   }
 
   // Drop rich ground loot

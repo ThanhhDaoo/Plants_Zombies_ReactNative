@@ -497,6 +497,14 @@
               <span class="value" id="pubgZoneTime">Bo thu: 40s</span>
             </div>
           </div>
+
+          <div class="pubg-top-right-actions">
+            <button id="pubgPerkClaimBadge" class="perk-claim-badge" style="display: none;" title="Bấm để chọn thẻ kỹ năng">
+              <span class="badge-star-icon">⭐</span>
+              <span class="badge-main-text" id="pubgPerkClaimTxt">LÊN CẤP (+1)</span>
+              <span class="badge-sub-text">CHỌN THẺ</span>
+            </button>
+          </div>
         </div>
 
         <!-- Boss Raid Titan Health Bar (Dominant Header) -->
@@ -699,15 +707,21 @@
 
 
     <!-- 6. ROGUELIKE LEVEL-UP PERK SELECTION MODAL -->
-    <div id="pubgPerkModal" style="display: none; position: fixed; inset: 0; background: rgba(5,15,5,0.92); z-index: 10001; align-items: center; justify-content: center; flex-direction: column;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <div style="font-size: 32px;">⭐</div>
-        <h2 style="font-size: 24px; font-weight: 900; color: #ffd54f; margin: 4px 0; text-shadow: 0 0 12px rgba(255,213,79,0.6);">THĂNG CẤP ĐỘT BIẾN!</h2>
-        <p style="color: #a5d6a7; font-size: 13px; margin: 0;">Chọn 1 thẻ kỹ năng để cường hóa sức mạnh trong trận</p>
-      </div>
+    <div id="pubgPerkModal" class="perk-modal-backdrop">
+      <div class="perk-modal-box">
+        <div class="perk-modal-header">
+          <div class="perk-modal-title-row">
+            <span class="perk-header-star">⭐</span>
+            <h2 class="perk-header-title">THĂNG CẤP ĐỘT BIẾN!</h2>
+            <span id="perkRemainingBadge" class="perk-remaining-badge" style="display: none;">Còn 1 lượt</span>
+          </div>
+          <p class="perk-header-desc">Chọn 1 thẻ kỹ năng để cường hóa sức mạnh sinh tồn</p>
+          <button id="perkCloseLaterBtn" class="perk-close-later-btn" title="Đóng để chọn sau">✕ Chọn sau</button>
+        </div>
 
-      <div id="perkCardsRow" style="display: flex; gap: 16px; justify-content: center; max-width: 90%;">
-        <!-- 3 Cards rendered dynamically -->
+        <div id="perkCardsRow" class="perk-cards-grid">
+          <!-- 3 Cards rendered dynamically -->
+        </div>
       </div>
     </div>
   </div>
