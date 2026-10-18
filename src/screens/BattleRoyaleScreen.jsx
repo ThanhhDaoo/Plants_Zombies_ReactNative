@@ -10,7 +10,7 @@ import { PauseModal } from '../components/modals/PauseModal';
 import { PerkSelectionModal } from '../components/modals/PerkSelectionModal';
 import { usePlayerStore } from '../store/usePlayerStore';
 
-export const BattleRoyaleScreen = ({ onBackToMenu }) => {
+export const BattleRoyaleScreen = ({ onBackToMenu, gameMode = 'battle_royale' }) => {
   const { width, height } = useWindowDimensions();
   const [tick, setTick] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -19,6 +19,8 @@ export const BattleRoyaleScreen = ({ onBackToMenu }) => {
 
   const addMatchRewards = usePlayerStore((s) => s.addMatchRewards);
   const selectedWeapon = usePlayerStore((s) => s.selectedWeapon);
+  const selectedSkin = usePlayerStore((s) => s.selectedSkin);
+  const selectedPet = usePlayerStore((s) => s.selectedPet);
   const stats = usePlayerStore((s) => s.stats);
 
   const startNewMatch = () => {
@@ -30,6 +32,9 @@ export const BattleRoyaleScreen = ({ onBackToMenu }) => {
       hpLevel: stats.maxHealthLevel,
       armorLevel: stats.armorLevel,
       speedLevel: stats.speedLevel,
+      selectedSkin,
+      selectedPet,
+      gameMode,
     });
   };
 

@@ -111,6 +111,9 @@ class BattleRoyaleEngine {
     this.camera.shakeX = 0;
     this.camera.shakeY = 0;
 
+    this.gameMode = savedData.gameMode || 'battle_royale';
+    this.boss = null;
+
     const maxHp = 100 + (savedData.hpLevel ? (savedData.hpLevel - 1) * 25 : 0);
     p.health = maxHp;
     p.maxHealth = maxHp;
@@ -118,6 +121,24 @@ class BattleRoyaleEngine {
     p.maxArmor = 100;
     p.speed = 4.6 + (savedData.speedLevel ? (savedData.speedLevel - 1) * 0.3 : 0);
     p.magnetRadius = 85;
+
+    // Skin bonuses
+    p.skin = savedData.selectedSkin || 'default';
+    if (p.skin === 'ninja') {
+      p.speed *= 1.10;
+    } else if (p.skin === 'cyberpunk') {
+      p.armor += 25;
+      p.maxArmor += 25;
+    }
+
+    // Pet companions
+    p.pet = savedData.selectedPet || null;
+    p.wallnutShieldActive = p.pet === 'mini_wallnut';
+    p.wallnutCooldown = 0;
+    p.shroomTimer = 0;
+    if (p.pet === 'mini_sunflower') {
+      p.magnetRadius = 240;
+    }
 
     const weaponId = savedData.selectedWeapon || 'pea_pistol';
     p.currentWeapon = weaponId;
@@ -148,15 +169,15 @@ class BattleRoyaleEngine {
     // Safe Zone setup
     this.zone.centerX = 1200;
     this.zone.centerY = 1200;
-    this.zone.radius = 1500;
-    this.zone.targetRadius = 1000;
+    this.zone.radius = this.gameMode === 'boss_raid' ? 1200 : 1500;
+    this.zone.targetRadius = this.gameMode === 'boss_raid' ? 700 : 1000;
     this.zone.phase = 1;
-    this.zone.countdown = 40;
+    this.zone.countdown = this.gameMode === 'boss_raid' ? 60 : 40;
     this.zone.isShrinking = false;
     this.zone.damagePerSec = 4;
 
-    this.spawnCrates(28);
-    this.spawnInitialZombies(MAP_CONFIG.TOTAL_ZOMBIES);
+    this.spawnCrates(this.gameMode === 'boss_raid' ? 16 : 28);
+    this.spawnInitialZombies(this.gameMode === 'boss_raid' ? 8 : MAP_CONFIG.TOTAL_ZOMBIES);
     this.aliveCount = this.zombies.length + 1;
   }
 
@@ -424,6 +445,51 @@ class BattleRoyaleEngine {
 
   spawnInitialZombies(count) {
     this.zombies = [];
+
+    if (this.gameMode === 'boss_raid') {
+      this.boss = {
+        id: 'boss-zomboss',
+        type: 'zomboss_titan',
+        name: 'Dr. Zomboss Mech Titan',
+        x: 1200,
+        y: 1200,
+        radius: 65,
+        health: 3000,
+        maxHealth: 3000,
+        speed: 1.6,
+        damage: 35,
+        color: '#7b1fa2',
+        isBoss: true,
+        attackTimer: 0,
+        stompTimer: 0,
+      };
+      this.zombies.push(this.boss);
+
+      // Spawn 6 guard minions
+      for (let g = 0; g < 6; g++) {
+        const gAngle = (g / 6) * Math.PI * 2;
+        this.zombies.push({
+          id: `guard-${g}`,
+          type: g % 2 === 0 ? 'conehead' : 'buckethead',
+          x: 1200 + Math.cos(gAngle) * 200,
+          y: 1200 + Math.sin(gAngle) * 200,
+          radius: 28,
+          health: 120,
+          maxHealth: 120,
+          speed: 1.8,
+          damage: 18,
+          color: g % 2 === 0 ? '#ff9800' : '#78909c',
+          isRanged: false,
+          shootTimer: 0,
+          isSlowed: false,
+          slowTimer: 0,
+          isFrozen: false,
+          freezeTimer: 0,
+        });
+      }
+      return;
+    }
+
     for (let i = 0; i < count; i++) {
       let typeKey = 'normal';
       const r = Math.random();
@@ -793,30 +859,223 @@ class BattleRoyaleEngine {
       z.x += Math.cos(angleToPlayer) * spd;
       z.y += Math.sin(angleToPlayer) * spd;
 
+      // Arctic skin chill aura
+      if (p.skin === 'arctic') {
+        if (Math.hypot(p.x - z.x, p.y - z.y) < 140) {
+          z.isSlowed = true;
+          z.slowTimer = now + 400;
+        }
+      }
+
+      // Boss special attacks
+      if (z.type === 'zomboss_titan') {
+        z.attackTimer = (z.attackTimer || 0) + dtMs;
+        if (z.attackTimer >= 3800) {
+          z.attackTimer = 0;
+          for (let m = -1; m <= 1; m++) {
+            const baseAng = Math.atan2(p.y - z.y, p.x - z.x);
+            const mAng = baseAng + m * 0.35;
+            this.enemyProjectiles.push({
+              id: `boss-rocket-${Math.random()}`,
+              x: z.x,
+              y: z.y,
+              vx: Math.cos(mAng) * 6.5,
+              vy: Math.sin(mAng) * 6.5,
+              radius: 9,
+              damage: 22,
+              color: '#ff1744',
+              life: 80,
+              isHoming: true,
+            });
+          }
+          SoundService.playFireball();
+        }
+
+        z.stompTimer = (z.stompTimer || 0) + dtMs;
+        if (z.stompTimer >= 8000) {
+          z.stompTimer = 0;
+          this.shockwaves.push({
+            id: `boss-wave-${Math.random()}`,
+            x: z.x,
+            y: z.y,
+            radius: 25,
+            maxRadius: 260,
+            damage: 30,
+            color: 'rgba(233, 30, 99, 0.75)',
+            hasHitPlayer: false,
+          });
+          this.addTrauma(0.5);
+          SoundService.playExplosion();
+        }
+      }
+
       // Melee attack
       const dist = Math.hypot(p.x - z.x, p.y - z.y);
       if (dist < p.radius + z.radius) {
         const dmgTaken = z.damage * dt;
 
-        // Thorn Armor perk
-        if (p.perks.thornArmor) {
-          z.health -= dmgTaken * 0.6;
-        }
+        // Wall-nut Pet Shield absorption
+        if (p.pet === 'mini_wallnut' && p.wallnutShieldActive) {
+          p.wallnutShieldActive = false;
+          p.wallnutCooldown = 12000;
+          this.floatingTexts.push({
+            id: `nut-block-${Math.random()}`,
+            x: p.x,
+            y: p.y - 25,
+            text: '🥥 SHIELD BLOCK!',
+            color: '#ffd54f',
+            isCrit: true,
+            life: 30,
+            vy: -1.2,
+          });
+        } else {
+          // Thorn Armor perk
+          if (p.perks.thornArmor) {
+            z.health -= dmgTaken * 0.6;
+          }
 
+          if (p.armor > 0) {
+            p.armor -= dmgTaken;
+            if (p.armor < 0) {
+              p.health += p.armor;
+              p.armor = 0;
+            }
+          } else {
+            p.health -= dmgTaken;
+          }
+          this.addTrauma(0.06);
+
+          if (p.health <= 0) {
+            this.isGameOver = true;
+          }
+        }
+      }
+    }
+
+    // 7.1 Update Enemy Projectiles (Boss Missiles)
+    for (let i = this.enemyProjectiles.length - 1; i >= 0; i--) {
+      const proj = this.enemyProjectiles[i];
+      if (proj.isHoming) {
+        const ang = Math.atan2(p.y - proj.y, p.x - proj.x);
+        proj.vx = proj.vx * 0.93 + Math.cos(ang) * 6.5 * 0.07;
+        proj.vy = proj.vy * 0.93 + Math.sin(ang) * 6.5 * 0.07;
+      }
+      proj.x += proj.vx;
+      proj.y += proj.vy;
+      proj.life--;
+
+      const distToPlayer = Math.hypot(p.x - proj.x, p.y - proj.y);
+      if (distToPlayer < p.radius + proj.radius) {
+        if (p.pet === 'mini_wallnut' && p.wallnutShieldActive) {
+          p.wallnutShieldActive = false;
+          p.wallnutCooldown = 12000;
+          this.floatingTexts.push({
+            id: `nut-block-${Math.random()}`,
+            x: p.x,
+            y: p.y - 25,
+            text: '🥥 SHIELD BLOCK!',
+            color: '#ffd54f',
+            isCrit: true,
+            life: 30,
+            vy: -1.2,
+          });
+        } else {
+          let dmg = proj.damage;
+          if (p.armor > 0) {
+            p.armor -= dmg;
+            if (p.armor < 0) {
+              p.health += p.armor;
+              p.armor = 0;
+            }
+          } else {
+            p.health -= dmg;
+          }
+          this.addTrauma(0.35);
+          this.floatingTexts.push({
+            id: `p-hit-${Math.random()}`,
+            x: p.x,
+            y: p.y - 20,
+            text: `-${Math.round(dmg)}`,
+            color: '#ff1744',
+            isCrit: true,
+            life: 25,
+            vy: -1.5,
+          });
+          if (p.health <= 0) this.isGameOver = true;
+        }
+        this.enemyProjectiles.splice(i, 1);
+        continue;
+      }
+
+      if (proj.life <= 0) {
+        this.enemyProjectiles.splice(i, 1);
+      }
+    }
+
+    // 7.2 Update Shockwaves
+    for (let i = this.shockwaves.length - 1; i >= 0; i--) {
+      const sw = this.shockwaves[i];
+      sw.radius += 5;
+      const distP = Math.hypot(p.x - sw.x, p.y - sw.y);
+      if (Math.abs(distP - sw.radius) < 18 && !sw.hasHitPlayer) {
+        sw.hasHitPlayer = true;
         if (p.armor > 0) {
-          p.armor -= dmgTaken;
+          p.armor -= sw.damage;
           if (p.armor < 0) {
             p.health += p.armor;
             p.armor = 0;
           }
         } else {
-          p.health -= dmgTaken;
+          p.health -= sw.damage;
         }
-        this.addTrauma(0.06);
+        this.addTrauma(0.4);
+        this.floatingTexts.push({
+          id: `sw-hit-${Math.random()}`,
+          x: p.x,
+          y: p.y - 20,
+          text: `⚡ -${sw.damage}`,
+          color: '#ff1744',
+          isCrit: true,
+          life: 25,
+          vy: -1.5,
+        });
+        if (p.health <= 0) this.isGameOver = true;
+      }
+      if (sw.radius >= sw.maxRadius) {
+        this.shockwaves.splice(i, 1);
+      }
+    }
 
-        if (p.health <= 0) {
-          this.isGameOver = true;
-        }
+    // 7.3 Pet Cooldowns & Spore generation
+    if (p.pet === 'mini_wallnut' && !p.wallnutShieldActive) {
+      p.wallnutCooldown -= dtMs;
+      if (p.wallnutCooldown <= 0) {
+        p.wallnutShieldActive = true;
+        this.floatingTexts.push({
+          id: `nut-ready-${Math.random()}`,
+          x: p.x,
+          y: p.y - 25,
+          text: '🥥 SHIELD SẴN SÀNG!',
+          color: '#a5d6a7',
+          isCrit: false,
+          life: 25,
+          vy: -1.0,
+        });
+      }
+    }
+
+    if (p.pet === 'mini_shroom') {
+      p.shroomTimer = (p.shroomTimer || 0) + dtMs;
+      if (p.shroomTimer >= 3500) {
+        p.shroomTimer = 0;
+        this.acidPatches.push({
+          id: `shroom-spore-${Math.random()}`,
+          x: p.x,
+          y: p.y,
+          radius: 46,
+          damage: 28,
+          duration: 3800,
+        });
       }
     }
 
@@ -890,6 +1149,47 @@ class BattleRoyaleEngine {
   }
 
   spawnZombieLoot(zombie) {
+    if (zombie.type === 'zomboss_titan') {
+      // Big Boss Loot Bonanza!
+      this.matchRewards.coins += 500;
+      this.matchRewards.brains += 10;
+      this.addTrauma(0.8);
+      SoundService.playExplosion();
+
+      for (let k = 0; k < 12; k++) {
+        const kAng = (k / 12) * Math.PI * 2;
+        this.groundItems.push({
+          id: `boss-coin-${Math.random()}`,
+          x: zombie.x + Math.cos(kAng) * 60,
+          y: zombie.y + Math.sin(kAng) * 60,
+          type: 'coin',
+          value: 50,
+          emoji: '🪙',
+        });
+        this.groundItems.push({
+          id: `boss-exp-${Math.random()}`,
+          x: zombie.x + Math.cos(kAng) * 90,
+          y: zombie.y + Math.sin(kAng) * 90,
+          type: 'exp',
+          value: 120,
+          emoji: '✨',
+        });
+      }
+      for (let b = 0; b < 6; b++) {
+        const bAng = (b / 6) * Math.PI * 2;
+        this.groundItems.push({
+          id: `boss-brain-${Math.random()}`,
+          x: zombie.x + Math.cos(bAng) * 120,
+          y: zombie.y + Math.sin(bAng) * 120,
+          type: 'brain',
+          value: 2,
+          emoji: '🧠',
+        });
+      }
+      this.isVictory = true;
+      return;
+    }
+
     this.groundItems.push({
       id: `loot-coin-${Math.random()}`,
       x: zombie.x,

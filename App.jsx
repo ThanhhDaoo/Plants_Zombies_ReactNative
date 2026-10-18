@@ -6,6 +6,7 @@ import { BattleRoyaleScreen } from './src/screens/BattleRoyaleScreen';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('home');
+  const [gameMode, setGameMode] = useState('battle_royale');
 
   useEffect(() => {
     async function lockOrientation() {
@@ -24,9 +25,17 @@ export default function App() {
     <View style={styles.container}>
       <StatusBar hidden />
       {currentScreen === 'home' ? (
-        <HomeScreen onStartGame={() => setCurrentScreen('game')} />
+        <HomeScreen
+          onStartGame={(mode = 'battle_royale') => {
+            setGameMode(mode);
+            setCurrentScreen('game');
+          }}
+        />
       ) : (
-        <BattleRoyaleScreen onBackToMenu={() => setCurrentScreen('home')} />
+        <BattleRoyaleScreen
+          gameMode={gameMode}
+          onBackToMenu={() => setCurrentScreen('home')}
+        />
       )}
     </View>
   );

@@ -8,8 +8,11 @@ import {
   ScrollView,
   Modal,
 } from 'react-native';
-import { usePlayerStore } from '../store/usePlayerStore';
+import { usePlayerStore, SKINS_CONFIG, PETS_CONFIG } from '../store/usePlayerStore';
 import { WEAPONS } from '../game/config/pubgWeapons';
+import { ZenGardenModal } from '../components/modals/ZenGardenModal';
+import { LuckySpinModal } from '../components/modals/LuckySpinModal';
+import { CosmeticsModal } from '../components/modals/CosmeticsModal';
 
 export const HomeScreen = ({ onStartGame }) => {
   const coins = usePlayerStore((s) => s.coins);
@@ -21,6 +24,10 @@ export const HomeScreen = ({ onStartGame }) => {
   const unlockedWeapons = usePlayerStore((s) => s.unlockedWeapons);
   const weaponLevels = usePlayerStore((s) => s.weaponLevels);
   const stats = usePlayerStore((s) => s.stats);
+  const selectedSkin = usePlayerStore((s) => s.selectedSkin);
+  const selectedPet = usePlayerStore((s) => s.selectedPet);
+  const canFreeSpin = usePlayerStore((s) => s.canFreeSpin);
+  const getZenRewards = usePlayerStore((s) => s.getZenRewards);
 
   const selectWeapon = usePlayerStore((s) => s.selectWeapon);
   const unlockWeapon = usePlayerStore((s) => s.unlockWeapon);
@@ -28,6 +35,10 @@ export const HomeScreen = ({ onStartGame }) => {
   const upgradeStat = usePlayerStore((s) => s.upgradeStat);
 
   const [armoryVisible, setArmoryVisible] = useState(false);
+  const [zenGardenVisible, setZenGardenVisible] = useState(false);
+  const [luckySpinVisible, setLuckySpinVisible] = useState(false);
+  const [cosmeticsVisible, setCosmeticsVisible] = useState(false);
+  const [gameMode, setGameMode] = useState('battle_royale'); // 'battle_royale' | 'boss_raid'
 
   // Compute Rank Title based on score and kills
   const rankScore = (highScore || 0) + (totalKills || 0) * 50;
@@ -88,11 +99,26 @@ export const HomeScreen = ({ onStartGame }) => {
 
             <View style={styles.heroAvatarContainer}>
               <View style={styles.heroAura} />
-              <Text style={styles.heroAvatar}>🌱</Text>
+              <Text style={styles.heroAvatar}>
+                {SKINS_CONFIG[selectedSkin]?.emoji || '🌱'}
+              </Text>
+              {selectedPet && (
+                <View style={styles.petFloatingBadge}>
+                  <Text style={styles.petFloatingEmoji}>
+                    {PETS_CONFIG[selectedPet]?.emoji || '🐾'}
+                  </Text>
+                </View>
+              )}
             </View>
 
-            <Text style={styles.heroName}>ĐẬU CHIẾN BINH</Text>
-            <Text style={styles.heroSub}>Sẵn sàng sinh tồn trong vòng bo</Text>
+            <Text style={styles.heroName}>
+              {SKINS_CONFIG[selectedSkin]?.name || 'ĐẬU CHIẾN BINH'}
+            </Text>
+            <Text style={styles.heroSub}>
+              {selectedPet
+                ? `Đồng hành: ${PETS_CONFIG[selectedPet]?.name}`
+                : 'Sẵn sàng sinh tồn trong vòng bo'}
+            </Text>
 
             {/* Hero Stats */}
             <View style={styles.statList}>
@@ -113,14 +139,98 @@ export const HomeScreen = ({ onStartGame }) => {
 
           {/* Middle Column: Play Action & Match Info */}
           <View style={styles.centerCard}>
+            {/* Quick Feature Action Pills */}
+            <View style={styles.featureRow}>
+              <TouchableOpacity
+                style={styles.featurePill}
+                onPress={() => setZenGardenVisible(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.featureIcon}>🌻</Text>
+                <Text style={styles.featureText}>Vườn Zen</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.featurePill, styles.spinPill]}
+                onPress={() => setLuckySpinVisible(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.featureIcon}>🎰</Text>
+                <Text style={styles.featureText}>
+                  Vòng Quay {canFreeSpin() ? '🎁' : ''}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.featurePill, styles.cosmeticsPill]}
+                onPress={() => setCosmeticsVisible(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.featureIcon}>✨</Text>
+                <Text style={styles.featureText}>Ngoại Trang</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Game Mode Selector */}
+            <View style={styles.modeSelector}>
+              <TouchableOpacity
+                style={[
+                  styles.modeTab,
+                  gameMode === 'battle_royale' && styles.modeTabActive,
+                ]}
+                onPress={() => setGameMode('battle_royale')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.modeEmoji}>🏆</Text>
+                <Text
+                  style={[
+                    styles.modeLabel,
+                    gameMode === 'battle_royale' && styles.modeLabelActive,
+                  ]}
+                >
+                  SINH TỒN
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.modeTab,
+                  gameMode === 'boss_raid' && styles.modeTabBossActive,
+                ]}
+                onPress={() => setGameMode('boss_raid')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.modeEmoji}>👹</Text>
+                <Text
+                  style={[
+                    styles.modeLabel,
+                    gameMode === 'boss_raid' && styles.modeLabelBossActive,
+                  ]}
+                >
+                  BOSS RAID
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
               activeOpacity={0.85}
-              style={styles.playBtn}
-              onPress={onStartGame}
+              style={[
+                styles.playBtn,
+                gameMode === 'boss_raid' && styles.playBtnBoss,
+              ]}
+              onPress={() => onStartGame(gameMode)}
             >
-              <Text style={styles.playIcon}>⚔️</Text>
-              <Text style={styles.playText}>CHIẾN ĐẤU NGAY</Text>
-              <Text style={styles.playSubText}>Vòng Bo 4 Giai Đoạn • 32 Zombie AI</Text>
+              <Text style={styles.playIcon}>
+                {gameMode === 'boss_raid' ? '👹' : '⚔️'}
+              </Text>
+              <Text style={styles.playText}>
+                {gameMode === 'boss_raid' ? 'KHIÊU CHIẾN ZOMBOSS' : 'CHIẾN ĐẤU NGAY'}
+              </Text>
+              <Text style={styles.playSubText}>
+                {gameMode === 'boss_raid'
+                  ? 'Titan Mech Zomboss • Rơi 500 Xu & 10 Não VIP'
+                  : 'Vòng Bo 4 Giai Đoạn • 32 Zombie AI'}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -133,11 +243,11 @@ export const HomeScreen = ({ onStartGame }) => {
             </TouchableOpacity>
 
             <View style={styles.tipsBox}>
-              <Text style={styles.tipsTitle}>💡 MẸO SINH TỒN</Text>
+              <Text style={styles.tipsTitle}>💡 MẸO CHIẾN ĐẤU</Text>
               <Text style={styles.tipsContent}>
-                • Giữ nút BẮN để tụ lực bắn Siêu Đậu Mega 💥{'\n'}
-                • Phá thùng gỗ để nhặt Túi Máu & Xu 🪙{'\n'}
-                • Luôn để ý thời gian vòng bo thu hẹp ⏱️
+                {gameMode === 'boss_raid'
+                  ? '• Né shockwave động đất của Zomboss bằng nút LƯỚT ⚡\n• Trang bị Wall-nut nhí để đỡ tên lửa của Mech! 🥥'
+                  : '• Giữ nút BẮN để tụ lực bắn Siêu Đậu Mega 💥\n• Phá thùng gỗ để nhặt Túi Máu & Thăng Cấp ⭐'}
               </Text>
             </View>
           </View>
@@ -325,6 +435,24 @@ export const HomeScreen = ({ onStartGame }) => {
             </View>
           </View>
         )}
+
+        {/* Zen Garden Modal */}
+        <ZenGardenModal
+          visible={zenGardenVisible}
+          onClose={() => setZenGardenVisible(false)}
+        />
+
+        {/* Lucky Wheel Modal */}
+        <LuckySpinModal
+          visible={luckySpinVisible}
+          onClose={() => setLuckySpinVisible(false)}
+        />
+
+        {/* Cosmetics & Pets Modal */}
+        <CosmeticsModal
+          visible={cosmeticsVisible}
+          onClose={() => setCosmeticsVisible(false)}
+        />
       </View>
     </ImageBackground>
   );
@@ -504,6 +632,100 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
   },
+  petFloatingBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#ffb300',
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
+  },
+  petFloatingEmoji: {
+    fontSize: 14,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 6,
+    marginBottom: 6,
+  },
+  featurePill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(76, 175, 80, 0.25)',
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#81c784',
+    gap: 4,
+  },
+  spinPill: {
+    backgroundColor: 'rgba(171, 71, 188, 0.25)',
+    borderColor: '#ce93d8',
+  },
+  cosmeticsPill: {
+    backgroundColor: 'rgba(33, 150, 243, 0.25)',
+    borderColor: '#90caf9',
+  },
+  featureIcon: {
+    fontSize: 14,
+  },
+  featureText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  modeSelector: {
+    flexDirection: 'row',
+    width: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    borderRadius: 12,
+    padding: 3,
+    gap: 4,
+    marginBottom: 8,
+  },
+  modeTab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 7,
+    borderRadius: 10,
+    gap: 6,
+  },
+  modeTabActive: {
+    backgroundColor: '#2e7d32',
+    borderWidth: 1,
+    borderColor: '#81c784',
+  },
+  modeTabBossActive: {
+    backgroundColor: '#7b1fa2',
+    borderWidth: 1,
+    borderColor: '#ba68c8',
+  },
+  modeEmoji: {
+    fontSize: 14,
+  },
+  modeLabel: {
+    fontSize: 11,
+    color: '#9e9e9e',
+    fontWeight: '700',
+  },
+  modeLabelActive: {
+    color: '#ffffff',
+    fontWeight: '900',
+  },
+  modeLabelBossActive: {
+    color: '#ffffff',
+    fontWeight: '900',
+  },
   playBtn: {
     width: '100%',
     backgroundColor: '#2e7d32',
@@ -517,6 +739,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.6,
     shadowRadius: 10,
     elevation: 8,
+  },
+  playBtnBoss: {
+    backgroundColor: '#6a1b9a',
+    borderColor: '#ab47bc',
+    shadowColor: '#ab47bc',
   },
   playIcon: {
     fontSize: 28,

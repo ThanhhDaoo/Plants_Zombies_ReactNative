@@ -71,6 +71,29 @@ export const BattleRoyaleHUD = ({ onPause, tick, width, height }) => {
         </View>
       </View>
 
+      {/* Dr. Zomboss Boss Health Bar */}
+      {battleRoyaleEngine.boss && battleRoyaleEngine.boss.health > 0 && (
+        <View style={styles.bossBarRow} pointerEvents="none">
+          <View style={styles.bossBadge}>
+            <Text style={styles.bossIcon}>👹</Text>
+            <Text style={styles.bossName}>DR. ZOMBOSS MECH TITAN</Text>
+            <Text style={styles.bossHpText}>
+              {Math.max(0, Math.round(battleRoyaleEngine.boss.health))}/{battleRoyaleEngine.boss.maxHealth} HP
+            </Text>
+          </View>
+          <View style={styles.bossTrack}>
+            <View
+              style={[
+                styles.bossFill,
+                {
+                  width: `${Math.max(0, Math.min(1, battleRoyaleEngine.boss.health / battleRoyaleEngine.boss.maxHealth)) * 100}%`,
+                },
+              ]}
+            />
+          </View>
+        </View>
+      )}
+
       {/* EXP Level Progress Bar */}
       <View style={styles.expBarRow} pointerEvents="none">
         <View style={styles.expBadge}>
@@ -397,5 +420,50 @@ const styles = StyleSheet.create({
     color: '#ffd600',
     textShadowColor: '#d50000',
     textShadowRadius: 6,
+  },
+  bossBarRow: {
+    position: 'absolute',
+    top: 48,
+    left: '15%',
+    right: '15%',
+    backgroundColor: 'rgba(10, 0, 20, 0.85)',
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#e91e63',
+    padding: 6,
+    gap: 4,
+    shadowColor: '#e91e63',
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+  },
+  bossBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  bossIcon: {
+    fontSize: 14,
+  },
+  bossName: {
+    color: '#f48fb1',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  bossHpText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  bossTrack: {
+    height: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  bossFill: {
+    height: '100%',
+    backgroundColor: '#e91e63',
+    borderRadius: 4,
   },
 });

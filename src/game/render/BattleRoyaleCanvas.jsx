@@ -193,11 +193,94 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
             </Group>
           ))}
 
-          {/* Zombies */}
+          {/* Enemy Projectiles (Boss Missiles) */}
+          {battleRoyaleEngine.enemyProjectiles.map((proj) => (
+            <Group key={proj.id}>
+              <Circle cx={proj.x} cy={proj.y} r={proj.radius} color="#ff1744" />
+              <Circle cx={proj.x} cy={proj.y} r={proj.radius * 0.45} color="#ffd600" />
+            </Group>
+          ))}
+
+          {/* Shockwaves */}
+          {battleRoyaleEngine.shockwaves.map((sw) => (
+            <Circle
+              key={sw.id}
+              cx={sw.x}
+              cy={sw.y}
+              r={sw.radius}
+              color={sw.color || 'rgba(233, 30, 99, 0.6)'}
+              style="stroke"
+              strokeWidth={5}
+            />
+          ))}
+
+          {/* Zombies & Dr. Zomboss Mech */}
           {battleRoyaleEngine.zombies.map((z) => {
-            const tex = zombieTextures[z.type] || imgZombieNormal;
+            const isBoss = z.type === 'zomboss_titan';
             const hpRatio = Math.max(0, z.health / z.maxHealth);
 
+            if (isBoss) {
+              return (
+                <Group key={z.id}>
+                  {/* Shadow */}
+                  <Circle cx={z.x} cy={z.y + 20} r={z.radius * 1.1} color="rgba(0,0,0,0.45)" />
+
+                  {/* Titan Mech Body */}
+                  <Circle cx={z.x} cy={z.y} r={z.radius} color="#4a148c" />
+                  <Circle cx={z.x} cy={z.y} r={z.radius * 0.75} color="#7b1fa2" />
+
+                  {/* Mechanical Shoulder Cannons */}
+                  <Rect
+                    x={z.x - z.radius - 12}
+                    y={z.y - 18}
+                    width={22}
+                    height={36}
+                    color="#212121"
+                  />
+                  <Rect
+                    x={z.x + z.radius - 10}
+                    y={z.y - 18}
+                    width={22}
+                    height={36}
+                    color="#212121"
+                  />
+
+                  {/* Laser Eye Visor */}
+                  <Rect
+                    x={z.x - 24}
+                    y={z.y - 8}
+                    width={48}
+                    height={12}
+                    color="#ff1744"
+                  />
+                  <Rect
+                    x={z.x - 12}
+                    y={z.y - 4}
+                    width={24}
+                    height={4}
+                    color="#ffffff"
+                  />
+
+                  {/* Boss Overhead Health Bar */}
+                  <Rect
+                    x={z.x - 55}
+                    y={z.y - z.radius - 20}
+                    width={110}
+                    height={10}
+                    color="rgba(0,0,0,0.8)"
+                  />
+                  <Rect
+                    x={z.x - 55}
+                    y={z.y - z.radius - 20}
+                    width={110 * hpRatio}
+                    height={10}
+                    color="#e91e63"
+                  />
+                </Group>
+              );
+            }
+
+            const tex = zombieTextures[z.type] || imgZombieNormal;
             return (
               <Group key={z.id}>
                 {tex ? (
@@ -246,61 +329,175 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
             );
           })}
 
-          {/* Player: Pea Hero (Đậu Chiến Binh) */}
-          <Group>
-            {/* Shadow */}
-            <Circle
-              cx={player.x}
-              cy={player.y + 12}
-              r={player.radius}
-              color="rgba(0,0,0,0.3)"
-            />
+          {/* Player: Pea Hero with Skins & Pets */}
+          {(() => {
+            const skinId = player.skin || 'default';
+            let bodyColor = '#66bb6a';
+            let snoutColor = '#388e3c';
 
-            {/* Dash Speed Ghost */}
-            {player.isDashing && (
-              <Circle
-                cx={player.x - Math.cos(player.angle) * 30}
-                cy={player.y - Math.sin(player.angle) * 30}
-                r={player.radius * 0.9}
-                color="rgba(102, 187, 106, 0.4)"
-              />
-            )}
+            if (skinId === 'ninja') {
+              bodyColor = '#263238';
+              snoutColor = '#102027';
+            } else if (skinId === 'cowboy') {
+              bodyColor = '#558b2f';
+              snoutColor = '#33691e';
+            } else if (skinId === 'cyberpunk') {
+              bodyColor = '#00e5ff';
+              snoutColor = '#00b0ff';
+            } else if (skinId === 'arctic') {
+              bodyColor = '#80deea';
+              snoutColor = '#4dd0e1';
+            }
 
-            {/* Charging Aura */}
-            {player.isCharging && (
-              <Circle
-                cx={player.x}
-                cy={player.y}
-                r={player.radius * 1.6}
-                color="rgba(0, 229, 255, 0.35)"
-              />
-            )}
+            // Pet position
+            const orbit = ((Date.now() / 800) % (Math.PI * 2));
+            const petX = player.x + Math.cos(orbit) * 44;
+            const petY = player.y + Math.sin(orbit) * 44;
 
-            {/* Main Body */}
-            <Circle cx={player.x} cy={player.y} r={player.radius} color="#66bb6a" />
+            return (
+              <Group>
+                {/* Shadow */}
+                <Circle
+                  cx={player.x}
+                  cy={player.y + 12}
+                  r={player.radius}
+                  color="rgba(0,0,0,0.3)"
+                />
 
-            {/* Snout pointing at player.angle */}
-            <Circle
-              cx={player.x + Math.cos(player.angle) * 22}
-              cy={player.y + Math.sin(player.angle) * 22}
-              r={9}
-              color="#388e3c"
-            />
+                {/* Arctic Frost Aura */}
+                {skinId === 'arctic' && (
+                  <Circle
+                    cx={player.x}
+                    cy={player.y}
+                    r={130}
+                    color="rgba(0, 229, 255, 0.15)"
+                    style="stroke"
+                    strokeWidth={2}
+                  />
+                )}
 
-            {/* Eyes */}
-            <Circle
-              cx={player.x + Math.cos(player.angle - 0.5) * 12}
-              cy={player.y + Math.sin(player.angle - 0.5) * 12}
-              r={5}
-              color="#ffffff"
-            />
-            <Circle
-              cx={player.x + Math.cos(player.angle - 0.5) * 14}
-              cy={player.y + Math.sin(player.angle - 0.5) * 14}
-              r={2.5}
-              color="#111111"
-            />
-          </Group>
+                {/* Dash Speed Ghost */}
+                {player.isDashing && (
+                  <Circle
+                    cx={player.x - Math.cos(player.angle) * 30}
+                    cy={player.y - Math.sin(player.angle) * 30}
+                    r={player.radius * 0.9}
+                    color={bodyColor}
+                    opacity={0.4}
+                  />
+                )}
+
+                {/* Charging Aura */}
+                {player.isCharging && (
+                  <Circle
+                    cx={player.x}
+                    cy={player.y}
+                    r={player.radius * 1.6}
+                    color="rgba(0, 229, 255, 0.35)"
+                  />
+                )}
+
+                {/* Main Body */}
+                <Circle cx={player.x} cy={player.y} r={player.radius} color={bodyColor} />
+
+                {/* Skin Details: Ninja Headband */}
+                {skinId === 'ninja' && (
+                  <Rect
+                    x={player.x - 16}
+                    y={player.y - 12}
+                    width={32}
+                    height={7}
+                    color="#d32f2f"
+                  />
+                )}
+
+                {/* Skin Details: Cowboy Hat */}
+                {skinId === 'cowboy' && (
+                  <Group>
+                    <Rect
+                      x={player.x - 22}
+                      y={player.y - player.radius - 6}
+                      width={44}
+                      height={6}
+                      color="#4e342e"
+                    />
+                    <Rect
+                      x={player.x - 14}
+                      y={player.y - player.radius - 14}
+                      width={28}
+                      height={10}
+                      color="#5d4037"
+                    />
+                  </Group>
+                )}
+
+                {/* Skin Details: Cyberpunk Core */}
+                {skinId === 'cyberpunk' && (
+                  <Circle cx={player.x} cy={player.y} r={6} color="#ff007f" />
+                )}
+
+                {/* Snout pointing at player.angle */}
+                <Circle
+                  cx={player.x + Math.cos(player.angle) * 22}
+                  cy={player.y + Math.sin(player.angle) * 22}
+                  r={9}
+                  color={snoutColor}
+                />
+
+                {/* Eyes */}
+                <Circle
+                  cx={player.x + Math.cos(player.angle - 0.5) * 12}
+                  cy={player.y + Math.sin(player.angle - 0.5) * 12}
+                  r={5}
+                  color="#ffffff"
+                />
+                <Circle
+                  cx={player.x + Math.cos(player.angle - 0.5) * 14}
+                  cy={player.y + Math.sin(player.angle - 0.5) * 14}
+                  r={2.5}
+                  color="#111111"
+                />
+
+                {/* Orbiting Pet Companion */}
+                {player.pet && (
+                  <Group>
+                    {/* Pet Shadow */}
+                    <Circle cx={petX} cy={petY + 6} r={10} color="rgba(0,0,0,0.25)" />
+
+                    {player.pet === 'mini_sunflower' && (
+                      <Group>
+                        <Circle cx={petX} cy={petY} r={14} color="#fbc02d" />
+                        <Circle cx={petX} cy={petY} r={8} color="#fff59d" />
+                      </Group>
+                    )}
+
+                    {player.pet === 'mini_wallnut' && (
+                      <Group>
+                        <Circle cx={petX} cy={petY} r={13} color="#8d6e63" />
+                        {player.wallnutShieldActive && (
+                          <Circle
+                            cx={player.x}
+                            cy={player.y}
+                            r={player.radius * 1.55}
+                            color="#ffd54f"
+                            style="stroke"
+                            strokeWidth={3}
+                          />
+                        )}
+                      </Group>
+                    )}
+
+                    {player.pet === 'mini_shroom' && (
+                      <Group>
+                        <Circle cx={petX} cy={petY} r={12} color="#ab47bc" />
+                        <Circle cx={petX} cy={petY + 4} r={6} color="#e1bee7" />
+                      </Group>
+                    )}
+                  </Group>
+                )}
+              </Group>
+            );
+          })()}
         </Group>
       </Canvas>
     </View>
