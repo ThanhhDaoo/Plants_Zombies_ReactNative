@@ -116,6 +116,7 @@ export function spawnInitialZombies(count = 32) {
       health: 3000,
       maxHealth: 3000,
       speed: 2.2,
+      baseSpeed: 2.2,
       damage: 35,
       color: '#7b1fa2',
       points: 2000,
@@ -126,6 +127,7 @@ export function spawnInitialZombies(count = 32) {
       lastMissileTime: Date.now() + 2000,
       slowTimer: 0,
       slamAnimTimer: 0,
+      patrolTimer: 1000,
       walkCycle: 0
     });
 
@@ -154,6 +156,7 @@ export function spawnInitialZombies(count = 32) {
         lastAttackTime: 0,
         lastSpecialTime: Date.now() + 1500,
         slowTimer: 0,
+        slamAnimTimer: 0,
         patrolTimer: 1000,
         walkCycle: Math.random() * 10
       });
@@ -292,12 +295,23 @@ export function updateZombies(delta) {
   // 3. Update Zombies
   for (let i = pubgState.zombies.length - 1; i >= 0; i--) {
     const z = pubgState.zombies[i];
-    const typeDef = ZOMBIE_TYPES[z.type];
+    const typeDef = ZOMBIE_TYPES[z.type] || {};
 
-    // Animation step
-    z.walkCycle += (z.speed * delta) / 100;
+    // Safe fallbacks to prevent NaN or undefined freezes
+    if (typeof z.baseSpeed !== 'number' || isNaN(z.baseSpeed)) {
+      z.baseSpeed = (typeDef && typeDef.speed) ? typeDef.speed : 2.0;
+    }
+    if (typeof z.slamAnimTimer !== 'number' || isNaN(z.slamAnimTimer)) {
+      z.slamAnimTimer = 0;
+    }
+    if (typeof z.slowTimer !== 'number' || isNaN(z.slowTimer)) {
+      z.slowTimer = 0;
+    }
+    if (typeof z.patrolTimer !== 'number' || isNaN(z.patrolTimer)) {
+      z.patrolTimer = 1000;
+    }
 
-    // Slow decay
+    // Slow decay & actual speed calculation
     if (z.slowTimer > 0) {
       z.slowTimer -= delta;
       z.speed = z.baseSpeed * 0.5;
@@ -305,10 +319,13 @@ export function updateZombies(delta) {
       z.speed = z.baseSpeed;
     }
 
+    // Animation step
+    z.walkCycle = (z.walkCycle || 0) + (z.speed * delta) / 100;
+
     // Slam animation freeze for boss
     if (z.slamAnimTimer > 0) {
       z.slamAnimTimer -= delta;
-      continue; // Don't move while slamming
+      continue; // Don't move while charging slam
     }
 
     // Zone damage outside safe zone
@@ -337,14 +354,14 @@ export function updateZombies(delta) {
       z.angle = angleToPlayer;
 
       // Special attack: Toxic Spit
-      if (z.type === 'toxic' && distToPlayer < 420 && now - z.lastSpecialTime > typeDef.shootCooldown) {
+      if (z.type === 'toxic' && distToPlayer < 420 && now - (z.lastSpecialTime || 0) > (typeDef.shootCooldown || 2600)) {
         z.lastSpecialTime = now;
         fireToxicSpit(z, p);
       }
 
       // Special attack: Boss Shockwave Slam & Titan Missiles
       if (z.type === 'boss') {
-        if (distToPlayer < 240 && now - z.lastSpecialTime > 3500) {
+        if (distToPlayer < 240 && now - (z.lastSpecialTime || 0) > 3500) {
           z.lastSpecialTime = now;
           z.slamAnimTimer = 700;
           setTimeout(() => triggerBossSlam(z), 600);
@@ -367,13 +384,28 @@ export function updateZombies(delta) {
       }
 
       // Movement toward player (unless boss is preparing slam)
-      if (z.slamAnimTimer <= 0) {
+      if (!z.slamAnimTimer || z.slamAnimTimer <= 0) {
         z.x += Math.cos(angleToPlayer) * z.speed;
         z.y += Math.sin(angleToPlayer) * z.speed;
       }
 
+      // Swarm separation push (prevent stacking directly on top of each other)
+      for (let j = 0; j < pubgState.zombies.length; j++) {
+        if (i === j) continue;
+        const other = pubgState.zombies[j];
+        const dX = z.x - other.x;
+        const dY = z.y - other.y;
+        const dist = Math.hypot(dX, dY);
+        const minDist = (z.radius + other.radius) * 0.85;
+        if (dist > 0 && dist < minDist) {
+          const push = ((minDist - dist) / dist) * 0.4;
+          z.x += dX * push;
+          z.y += dY * push;
+        }
+      }
+
       // Melee attack
-      if (distToPlayer < z.radius + p.radius + 6 && now - z.lastAttackTime > 850) {
+      if (distToPlayer < z.radius + p.radius + 8 && now - (z.lastAttackTime || 0) > 850) {
         z.lastAttackTime = now;
         damagePlayer(z.damage);
         playHitSound();
@@ -430,7 +462,9 @@ function triggerBossSlam(z) {
 
 export function damagePlayer(dmg) {
   const p = pubgState.player;
-  if (p.health <= 0) return;
+  if (p.health <= 0 || (p.invincibleTimer && p.invincibleTimer > 0)) return;
+
+  p.invincibleTimer = 220; // 220ms i-frame protection against burst stacks
 
   if (p.armor > 0) {
     const armorDamage = Math.min(p.armor, dmg * 0.65);

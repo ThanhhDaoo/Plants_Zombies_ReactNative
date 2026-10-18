@@ -66,15 +66,16 @@ export function startPubgGame() {
   const p = pubgState.player;
   if (isBossRaid) {
     p.x = 1200;
-    p.y = 1380; // Directly 280px in front of boss at y=1100
+    p.y = 1520; // Balanced combat spacing ~420px from boss
     pubgState.camera.x = 1200;
-    pubgState.camera.y = 1240;
+    pubgState.camera.y = 1310;
   } else {
     p.x = 1200;
     p.y = 1200;
     pubgState.camera.x = 1200;
     pubgState.camera.y = 1200;
   }
+  p.invincibleTimer = 1800; // 1.8s spawn shield
   p.health = playerStats.maxHealth;
   p.maxHealth = playerStats.maxHealth;
   p.armor = playerStats.initialArmor;
@@ -273,6 +274,10 @@ function updatePubg(delta) {
   // Clamp player to map
   p.x = Math.max(p.radius + 15, Math.min(MAP_CONFIG.WIDTH - p.radius - 15, p.x));
   p.y = Math.max(p.radius + 15, Math.min(MAP_CONFIG.HEIGHT - p.radius - 15, p.y));
+
+  if (p.invincibleTimer > 0) {
+    p.invincibleTimer -= delta;
+  }
 
   // --- Dynamic Aim & Smart Auto-Targeting ("Tâm Bắn Linh Động") ---
   if (!pubgState.input.isManualAiming && !pubgState.input.mouse.isDown && !pubgState.input.touch.aimActive) {
