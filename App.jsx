@@ -6,12 +6,38 @@ import {
   Platform,
   ActivityIndicator,
   Text,
+  AppState,
 } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import * as NavigationBar from 'expo-navigation-bar';
 import { WebView } from 'react-native-webview';
 
 const LOCAL_ASSET_URI = 'file:///android_asset/web/index.html';
 const ONLINE_URL = 'https://plantzombies.vercel.app';
+
+const INJECTED_FULLSCREEN_JS = `
+  (function() {
+    try {
+      document.body.classList.add('is-mobile-app');
+      var meta = document.querySelector('meta[name="viewport"]');
+      if (meta) {
+        meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+      }
+      var gc = document.getElementById('gameContainer');
+      if (gc) {
+        gc.style.width = '100vw';
+        gc.style.height = '100vh';
+        gc.style.maxWidth = '100%';
+        gc.style.maxHeight = '100%';
+        gc.style.borderRadius = '0px';
+        gc.style.boxShadow = 'none';
+        gc.style.border = 'none';
+        gc.style.margin = '0px';
+      }
+    } catch(e) {}
+  })();
+  true;
+`;
 
 export default function App() {
   const [useOnline, setUseOnline] = useState(Platform.OS !== 'android');
@@ -19,7 +45,7 @@ export default function App() {
   const webViewRef = useRef(null);
 
   useEffect(() => {
-    async function lockOrientation() {
+    async function configureScreen() {
       try {
         await ScreenOrientation.lockAsync(
           ScreenOrientation.OrientationLock.LANDSCAPE
@@ -27,15 +53,35 @@ export default function App() {
       } catch (e) {
         // Fallback on web/simulator
       }
+
+      if (Platform.OS === 'android') {
+        try {
+          await NavigationBar.setVisibilityAsync('hidden');
+          await NavigationBar.setBehaviorAsync('overlay-swipe');
+          await NavigationBar.setBackgroundColorAsync('#00000000');
+        } catch (e) {
+          // Fallback
+        }
+      }
     }
-    lockOrientation();
+    configureScreen();
+
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active' && Platform.OS === 'android') {
+        NavigationBar.setVisibilityAsync('hidden').catch(() => {});
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   const source = useOnline ? { uri: ONLINE_URL } : { uri: LOCAL_ASSET_URI };
 
   return (
     <View style={styles.container}>
-      <StatusBar hidden />
+      <StatusBar hidden translucent backgroundColor="transparent" />
       <WebView
         ref={webViewRef}
         style={styles.webview}
@@ -53,7 +99,11 @@ export default function App() {
         bounces={false}
         overScrollMode="never"
         scrollEnabled={false}
-        onLoadEnd={() => setLoading(false)}
+        injectedJavaScript={INJECTED_FULLSCREEN_JS}
+        onLoadEnd={() => {
+          setLoading(false);
+          webViewRef.current?.injectJavaScript(INJECTED_FULLSCREEN_JS);
+        }}
         onError={() => {
           if (!useOnline) {
             setUseOnline(true);

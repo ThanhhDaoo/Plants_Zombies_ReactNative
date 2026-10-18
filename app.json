@@ -10,6 +10,15 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.thanhdao.plantsvszombies"
     },
+    "androidNavigationBar": {
+      "visible": "immersive",
+      "barStyle": "light-content",
+      "backgroundColor": "#00000000"
+    },
+    "androidStatusBar": {
+      "hidden": true,
+      "translucent": true
+    },
     "android": {
       "package": "com.thanhdao.plantsvszombies",
       "adaptiveIcon": {
