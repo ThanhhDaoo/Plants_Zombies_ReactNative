@@ -109,43 +109,57 @@ export function spawnInitialZombies(count = 32) {
       name: 'Dr. Zomboss Mech Titan',
       tier: 5,
       x: 1200,
-      y: 1200,
+      y: 1100, // Directly in front of player at y=1380
       vx: 0,
       vy: 0,
       radius: 65,
       health: 3000,
       maxHealth: 3000,
-      speed: 1.6,
+      speed: 2.2,
       damage: 35,
       color: '#7b1fa2',
       points: 2000,
       isBoss: true,
-      attackTimer: 0,
-      stompTimer: 0,
+      angle: Math.PI / 2,
+      lastAttackTime: 0,
+      lastSpecialTime: Date.now() + 1000,
+      lastMissileTime: Date.now() + 2000,
+      slowTimer: 0,
+      slamAnimTimer: 0,
+      walkCycle: 0
     });
-    for (let g = 0; g < 6; g++) {
-      const gAngle = (g / 6) * Math.PI * 2;
-      const typeKey = g % 2 === 0 ? 'conehead' : 'buckethead';
+
+    for (let g = 0; g < 8; g++) {
+      const gAngle = (g / 8) * Math.PI * 2;
+      const typeKey = g % 3 === 0 ? 'toxic' : (g % 2 === 0 ? 'conehead' : 'buckethead');
       const typeDef = ZOMBIE_TYPES[typeKey];
       pubgState.zombies.push({
         id: `guard_${g}`,
         type: typeKey,
         name: typeDef.name,
         tier: typeDef.tier,
-        x: 1200 + Math.cos(gAngle) * 200,
-        y: 1200 + Math.sin(gAngle) * 200,
+        x: 1200 + Math.cos(gAngle) * 240,
+        y: 1100 + Math.sin(gAngle) * 200,
         vx: 0,
         vy: 0,
         radius: typeDef.radius,
         health: typeDef.health,
         maxHealth: typeDef.health,
         speed: typeDef.speed,
+        baseSpeed: typeDef.speed,
         damage: typeDef.damage,
         color: typeDef.color,
         points: typeDef.points,
-        isBoss: false,
+        angle: Math.PI / 2,
+        lastAttackTime: 0,
+        lastSpecialTime: Date.now() + 1500,
+        slowTimer: 0,
+        patrolTimer: 1000,
+        walkCycle: Math.random() * 10
       });
     }
+
+    pubgState.aliveCount = pubgState.zombies.length + 1;
     return;
   }
 
@@ -154,7 +168,7 @@ export function spawnInitialZombies(count = 32) {
     const rand = Math.random();
 
     if (i === 0) {
-      typeKey = 'boss'; // 1 Titan Boss guarding center plaza
+      typeKey = 'boss'; // 1 Titan Boss
     } else if (i === 1 || i === 2) {
       typeKey = 'toxic';
     } else if (i === 3 || i === 4) {
@@ -173,12 +187,17 @@ export function spawnInitialZombies(count = 32) {
 
     const typeDef = ZOMBIE_TYPES[typeKey];
 
-    // Spawn across map safely away from player
+    // Spawn across map
     let x, y;
     if (typeKey === 'boss') {
-      // 1 Titan Boss guards the North Graveyard Lair
       x = 1200;
-      y = 480;
+      y = 900;
+    } else if (i >= 1 && i <= 3) {
+      // Immediate action: 3 zombies close to player (220-300px away) so player encounters enemies right away!
+      const a = (i / 3) * Math.PI * 2 + Math.random() * 0.4;
+      const dist = 220 + Math.random() * 80;
+      x = p.x + Math.cos(a) * dist;
+      y = p.y + Math.sin(a) * dist;
     } else {
       let attempts = 0;
       do {
@@ -304,7 +323,7 @@ export function updateZombies(delta) {
     }
 
     const distToPlayer = Math.hypot(p.x - z.x, p.y - z.y);
-    const seesPlayer = distToPlayer < (z.type === 'boss' ? 700 : 550);
+    const seesPlayer = z.isBoss || inventory.getGameMode() === 'boss_raid' || distToPlayer < 650;
 
     if (distFromZone > zone.radius + 120) {
       // Return to zone
@@ -323,11 +342,28 @@ export function updateZombies(delta) {
         fireToxicSpit(z, p);
       }
 
-      // Special attack: Boss Shockwave Slam
-      if (z.type === 'boss' && distToPlayer < 240 && now - z.lastSpecialTime > typeDef.slamCooldown) {
-        z.lastSpecialTime = now;
-        z.slamAnimTimer = 700; // 0.7s charge up animation
-        setTimeout(() => triggerBossSlam(z), 600);
+      // Special attack: Boss Shockwave Slam & Titan Missiles
+      if (z.type === 'boss') {
+        if (distToPlayer < 240 && now - z.lastSpecialTime > 3500) {
+          z.lastSpecialTime = now;
+          z.slamAnimTimer = 700;
+          setTimeout(() => triggerBossSlam(z), 600);
+        } else if (distToPlayer >= 240 && distToPlayer < 800 && now - (z.lastMissileTime || 0) > 3800) {
+          z.lastMissileTime = now;
+          for (let m = -1; m <= 1; m += 2) {
+            const mAngle = angleToPlayer + m * 0.35;
+            pubgState.enemyProjectiles.push({
+              x: z.x + Math.cos(mAngle) * 50,
+              y: z.y + Math.sin(mAngle) * 50,
+              vx: Math.cos(mAngle) * 4.5,
+              vy: Math.sin(mAngle) * 4.5,
+              radius: 9,
+              damage: 25,
+              color: '#d500f9',
+              life: 3000
+            });
+          }
+        }
       }
 
       // Movement toward player (unless boss is preparing slam)

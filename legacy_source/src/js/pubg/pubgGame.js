@@ -62,11 +62,19 @@ export function startPubgGame() {
   const selectedWId = inventory.getSelectedWeapon();
   const weaponStats = inventory.getEffectiveWeapon(selectedWId);
 
+  const isBossRaid = inventory.getGameMode() === 'boss_raid';
   const p = pubgState.player;
-  p.x = 1200;
-  p.y = 1950;
-  pubgState.camera.x = 1200;
-  pubgState.camera.y = 1950;
+  if (isBossRaid) {
+    p.x = 1200;
+    p.y = 1380; // Directly 280px in front of boss at y=1100
+    pubgState.camera.x = 1200;
+    pubgState.camera.y = 1240;
+  } else {
+    p.x = 1200;
+    p.y = 1200;
+    pubgState.camera.x = 1200;
+    pubgState.camera.y = 1200;
+  }
   p.health = playerStats.maxHealth;
   p.maxHealth = playerStats.maxHealth;
   p.armor = playerStats.initialArmor;
@@ -107,7 +115,6 @@ export function startPubgGame() {
 
   // Reset zone
   const z = pubgState.zone;
-  const isBossRaid = inventory.getGameMode() === 'boss_raid';
   z.centerX = 1200;
   z.centerY = 1200;
   z.radius = isBossRaid ? 1200 : 1450;
@@ -916,6 +923,21 @@ function updatePubgHud() {
 
   const aliveEl = document.getElementById('pubgAlive');
   if (aliveEl) aliveEl.textContent = pubgState.aliveCount;
+
+  // Boss Raid HUD
+  const boss = pubgState.zombies.find((zb) => zb.isBoss);
+  const bossHud = document.getElementById('pubgBossHud');
+  if (bossHud) {
+    if (boss && boss.health > 0) {
+      bossHud.style.display = 'block';
+      const hpTxt = document.getElementById('bossHudHpTxt');
+      const hpFill = document.getElementById('bossHudHpFill');
+      if (hpTxt) hpTxt.textContent = `${Math.ceil(boss.health)} / ${boss.maxHealth} HP`;
+      if (hpFill) hpFill.style.width = `${Math.max(0, (boss.health / boss.maxHealth) * 100)}%`;
+    } else {
+      bossHud.style.display = 'none';
+    }
+  }
 
   const weaponName = document.getElementById('pubgWeaponName');
   if (weaponName && w) weaponName.textContent = `${w.emoji} ${w.name} (Lv.${w.level})`;
