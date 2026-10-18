@@ -1,13 +1,35 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { battleRoyaleEngine } from '../../game/core/BattleRoyaleEngine';
 
 export const CombatControls = ({ playerState }) => {
   const p = playerState || battleRoyaleEngine.player;
+  const fireIntervalRef = useRef(null);
 
   const stormCdSec = Math.ceil((p.skills?.stormCd || 0) / 1000);
   const bombCdSec = Math.ceil((p.skills?.bombCd || 0) / 1000);
   const dashCdSec = Math.ceil((p.dashCooldown || 0) / 1000);
+
+  useEffect(() => {
+    return () => {
+      if (fireIntervalRef.current) clearInterval(fireIntervalRef.current);
+    };
+  }, []);
+
+  const handleFireStart = () => {
+    battleRoyaleEngine.triggerFire();
+    if (fireIntervalRef.current) clearInterval(fireIntervalRef.current);
+    fireIntervalRef.current = setInterval(() => {
+      battleRoyaleEngine.triggerFire();
+    }, 130);
+  };
+
+  const handleFireEnd = () => {
+    if (fireIntervalRef.current) {
+      clearInterval(fireIntervalRef.current);
+      fireIntervalRef.current = null;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -79,17 +101,14 @@ export const CombatControls = ({ playerState }) => {
         </View>
       </View>
 
-      {/* Main Fire / Charge Attack Button */}
+      {/* Main Fire / Rapid-Fire Button */}
       <TouchableOpacity
         activeOpacity={0.8}
-        onPressIn={() => battleRoyaleEngine.startCharging()}
-        onPressOut={() => battleRoyaleEngine.releaseCharging()}
-        style={[
-          styles.fireBtn,
-          p.isCharging && styles.fireBtnCharging,
-        ]}
+        onPressIn={handleFireStart}
+        onPressOut={handleFireEnd}
+        style={styles.fireBtn}
       >
-        <Text style={styles.fireEmoji}>💥</Text>
+        <Text style={styles.fireEmoji}>🎯</Text>
         <Text style={styles.fireText}>BẮN</Text>
       </TouchableOpacity>
     </View>

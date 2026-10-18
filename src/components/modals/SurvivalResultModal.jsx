@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
     zIndex: 9999,
+    elevation: 9999,
   },
   modalCard: {
     width: '90%',
@@ -91,6 +92,7 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
     borderWidth: 2.5,
+    elevation: 10000,
   },
   cardVictory: {
     borderColor: '#ffd54f',

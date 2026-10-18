@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-export const PerkSelectionModal = ({ visible, perks = [], level = 1, onSelectPerk }) => {
+export const PerkSelectionModal = ({ visible, perks = [], level = 1, onSelectPerk, onCloseLater }) => {
   if (!visible || !perks || perks.length === 0) return null;
 
   return (
@@ -9,8 +9,15 @@ export const PerkSelectionModal = ({ visible, perks = [], level = 1, onSelectPer
       <View style={styles.cardContainer}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerIcon}>⭐</Text>
-          <Text style={styles.headerTitle}>THĂNG CẤP CHIẾN BINH! (CẤP {level})</Text>
+          <View style={styles.headerTitleRow}>
+            <Text style={styles.headerIcon}>⭐</Text>
+            <Text style={styles.headerTitle}>THĂNG CẤP CHIẾN BINH!</Text>
+            {onCloseLater && (
+              <TouchableOpacity style={styles.closeLaterBtn} onPress={onCloseLater}>
+                <Text style={styles.closeLaterTxt}>✕ Chọn sau</Text>
+              </TouchableOpacity>
+            )}
+          </View>
           <Text style={styles.headerSub}>Chọn 1 trong 3 Đột Biến Roguelike để cường hóa sức mạnh:</Text>
         </View>
 
@@ -83,25 +90,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 36,
     zIndex: 9999,
+    elevation: 9999,
   },
   cardContainer: {
     width: '100%',
     maxWidth: 680,
     alignItems: 'center',
+    elevation: 10000,
   },
   header: {
     alignItems: 'center',
     marginBottom: 14,
+    width: '100%',
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    width: '100%',
   },
   headerIcon: {
     fontSize: 26,
+    marginRight: 8,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '900',
     color: '#ffd54f',
     letterSpacing: 1.5,
-    marginTop: 2,
+  },
+  closeLaterBtn: {
+    position: 'absolute',
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  closeLaterTxt: {
+    color: '#e0e0e0',
+    fontSize: 12,
+    fontWeight: '700',
   },
   headerSub: {
     fontSize: 11,

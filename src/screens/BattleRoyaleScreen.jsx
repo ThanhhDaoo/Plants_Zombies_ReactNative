@@ -130,6 +130,10 @@ export const BattleRoyaleScreen = ({ onBackToMenu, gameMode = 'battle_royale' })
           battleRoyaleEngine.applyPerk(perk);
           setTick((t) => t + 1);
         }}
+        onCloseLater={() => {
+          battleRoyaleEngine.closePerkSelection();
+          setTick((t) => t + 1);
+        }}
       />
     </View>
   );

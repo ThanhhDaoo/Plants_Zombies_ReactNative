@@ -65,6 +65,23 @@ export const BattleRoyaleHUD = ({ onPause, tick, width, height }) => {
             </View>
           </View>
 
+          {/* Claim Perk Badge */}
+          {(battleRoyaleEngine.pendingPerkPicks || 0) > 0 && (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.perkBadge}
+              onPress={() => battleRoyaleEngine.openPerkSelection()}
+            >
+              <Text style={styles.perkBadgeStar}>⭐</Text>
+              <Text style={styles.perkBadgeText}>
+                LÊN CẤP (+{battleRoyaleEngine.pendingPerkPicks})
+              </Text>
+              <View style={styles.perkBadgeHintTag}>
+                <Text style={styles.perkBadgeHint}>CHỌN THẺ</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity style={styles.pauseBtn} onPress={onPause}>
             <Text style={styles.pauseIcon}>⏸️</Text>
           </TouchableOpacity>
@@ -287,6 +304,42 @@ const styles = StyleSheet.create({
   },
   pauseIcon: {
     fontSize: 16,
+  },
+  perkBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e65100',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: '#ffe082',
+    gap: 5,
+    shadowColor: '#ff9800',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  perkBadgeStar: {
+    fontSize: 14,
+  },
+  perkBadgeText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.4,
+  },
+  perkBadgeHintTag: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  perkBadgeHint: {
+    color: '#ffe082',
+    fontSize: 9,
+    fontWeight: '800',
   },
   bottomStats: {
     position: 'absolute',

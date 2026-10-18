@@ -121,6 +121,7 @@ class BattleRoyaleEngine {
     p.maxArmor = 100;
     p.speed = 4.6 + (savedData.speedLevel ? (savedData.speedLevel - 1) * 0.3 : 0);
     p.magnetRadius = 85;
+    p.spawnInvulnerableTimer = 2500;
 
     // Skin bonuses
     p.skin = savedData.selectedSkin || 'default';
@@ -156,8 +157,9 @@ class BattleRoyaleEngine {
     p.isDashing = false;
     p.dashCooldown = 0;
     p.isCharging = false;
-    p.chargeTimer = 0;
-
+    this.pendingPerkPicks = 0;
+    this.isSelectingPerk = false;
+    this.pendingPerks = [];
     this.matchRewards = { coins: 0, brains: 0, kills: 0 };
     this.bullets = [];
     this.bombs = [];
@@ -211,8 +213,14 @@ class BattleRoyaleEngine {
       vy: -1.2,
     });
 
-    this.isSelectingPerk = false;
-    this.pendingPerks = [];
+    this.pendingPerkPicks = Math.max(0, (this.pendingPerkPicks || 1) - 1);
+    if (this.pendingPerkPicks > 0) {
+      this.pendingPerks = getRandomPerks(3, p.perks);
+      this.isSelectingPerk = true;
+    } else {
+      this.isSelectingPerk = false;
+      this.pendingPerks = [];
+    }
   }
 
   addExp(amount) {
@@ -223,11 +231,30 @@ class BattleRoyaleEngine {
       p.exp -= p.expToNextLevel;
       p.level++;
       p.expToNextLevel = Math.round(p.expToNextLevel * 1.45);
-      this.pendingPerks = getRandomPerks(3, p.perks);
-      this.isSelectingPerk = true;
-      this.addTrauma(0.35);
+      this.pendingPerkPicks = (this.pendingPerkPicks || 0) + 1;
+      this.floatingTexts.push({
+        id: `lvl-${Math.random()}`,
+        x: p.x,
+        y: p.y - 45,
+        text: `⭐ LÊN CẤP Lv.${p.level}!`,
+        color: '#ffd54f',
+        isCrit: true,
+        life: 50,
+        vy: -1.2,
+      });
+      this.addTrauma(0.2);
       SoundService.playSunCollect();
     }
+  }
+
+  openPerkSelection() {
+    if ((this.pendingPerkPicks || 0) <= 0) return;
+    this.pendingPerks = getRandomPerks(3, this.player.perks);
+    this.isSelectingPerk = true;
+  }
+
+  closePerkSelection() {
+    this.isSelectingPerk = false;
   }
 
   setJoystick(vx, vy) {
@@ -551,6 +578,7 @@ class BattleRoyaleEngine {
     }
 
     // 1. Skill & Dash cooldowns
+    if (p.spawnInvulnerableTimer > 0) p.spawnInvulnerableTimer = Math.max(0, p.spawnInvulnerableTimer - dtMs);
     if (p.skills.stormCd > 0) p.skills.stormCd = Math.max(0, p.skills.stormCd - dtMs);
     if (p.skills.bombCd > 0) p.skills.bombCd = Math.max(0, p.skills.bombCd - dtMs);
     if (p.dashCooldown > 0) p.dashCooldown = Math.max(0, p.dashCooldown - dtMs);
@@ -652,6 +680,7 @@ class BattleRoyaleEngine {
           if (isCrit) dmg *= 2.0;
 
           zombie.health -= dmg;
+          zombie.isAggroed = true;
           hit = true;
           SoundService.playSplat();
           this.addTrauma(isCrit ? 0.2 : 0.06);
@@ -853,15 +882,31 @@ class BattleRoyaleEngine {
         continue;
       }
 
-      // Chase player
-      const angleToPlayer = Math.atan2(p.y - z.y, p.x - z.x);
+      // Distance to player
+      const dist = Math.hypot(p.x - z.x, p.y - z.y);
+      const aggroDist = z.isAggroed ? 700 : (z.type === 'boss' || z.type === 'zomboss_titan' ? 850 : 380);
+      const isChasing = dist < aggroDist;
+      if (isChasing) z.isAggroed = true;
+
       const spd = z.isSlowed ? z.speed * 0.5 : z.speed;
-      z.x += Math.cos(angleToPlayer) * spd;
-      z.y += Math.sin(angleToPlayer) * spd;
+      if (isChasing) {
+        const angleToPlayer = Math.atan2(p.y - z.y, p.x - z.x);
+        z.x += Math.cos(angleToPlayer) * spd;
+        z.y += Math.sin(angleToPlayer) * spd;
+      } else {
+        // Slow territory patrol
+        if (!z.patrolAngle || (z.patrolTimer || 0) <= 0) {
+          z.patrolAngle = Math.random() * Math.PI * 2;
+          z.patrolTimer = 2000 + Math.random() * 3000;
+        }
+        z.patrolTimer -= dtMs;
+        z.x += Math.cos(z.patrolAngle) * spd * 0.35;
+        z.y += Math.sin(z.patrolAngle) * spd * 0.35;
+      }
 
       // Arctic skin chill aura
       if (p.skin === 'arctic') {
-        if (Math.hypot(p.x - z.x, p.y - z.y) < 140) {
+        if (dist < 140) {
           z.isSlowed = true;
           z.slowTimer = now + 400;
         }
@@ -909,44 +954,49 @@ class BattleRoyaleEngine {
         }
       }
 
-      // Melee attack
-      const dist = Math.hypot(p.x - z.x, p.y - z.y);
+      // Melee attack with cooldown (not continuous contact instant melt)
+      z.attackCooldown = Math.max(0, (z.attackCooldown || 0) - dtMs);
       if (dist < p.radius + z.radius) {
-        const dmgTaken = z.damage * dt;
+        if (z.attackCooldown <= 0 && (!p.spawnInvulnerableTimer || p.spawnInvulnerableTimer <= 0)) {
+          z.attackCooldown = 850; // 850ms between zombie bites
+          const dmgTaken = z.damage || 14;
 
-        // Wall-nut Pet Shield absorption
-        if (p.pet === 'mini_wallnut' && p.wallnutShieldActive) {
-          p.wallnutShieldActive = false;
-          p.wallnutCooldown = 12000;
-          this.floatingTexts.push({
-            id: `nut-block-${Math.random()}`,
-            x: p.x,
-            y: p.y - 25,
-            text: '🥥 SHIELD BLOCK!',
-            color: '#ffd54f',
-            isCrit: true,
-            life: 30,
-            vy: -1.2,
-          });
-        } else {
-          // Thorn Armor perk
-          if (p.perks.thornArmor) {
-            z.health -= dmgTaken * 0.6;
-          }
-
-          if (p.armor > 0) {
-            p.armor -= dmgTaken;
-            if (p.armor < 0) {
-              p.health += p.armor;
-              p.armor = 0;
-            }
+          // Wall-nut Pet Shield absorption
+          if (p.pet === 'mini_wallnut' && p.wallnutShieldActive) {
+            p.wallnutShieldActive = false;
+            p.wallnutCooldown = 12000;
+            this.floatingTexts.push({
+              id: `nut-block-${Math.random()}`,
+              x: p.x,
+              y: p.y - 25,
+              text: '🥥 SHIELD BLOCK!',
+              color: '#ffd54f',
+              isCrit: true,
+              life: 30,
+              vy: -1.2,
+            });
           } else {
-            p.health -= dmgTaken;
-          }
-          this.addTrauma(0.06);
+            // Thorn Armor perk
+            if (p.perks.thornArmor) {
+              z.health -= dmgTaken * 0.6;
+            }
 
-          if (p.health <= 0) {
-            this.isGameOver = true;
+            if (p.armor > 0) {
+              p.armor -= dmgTaken;
+              if (p.armor < 0) {
+                p.health += p.armor;
+                p.armor = 0;
+              }
+            } else {
+              p.health -= dmgTaken;
+            }
+            this.addTrauma(0.2);
+            SoundService.playHit();
+
+            if (p.health <= 0) {
+              p.health = 0;
+              this.isGameOver = true;
+            }
           }
         }
       }

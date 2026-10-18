@@ -293,7 +293,39 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
                     fit="contain"
                   />
                 ) : (
-                  <Circle cx={z.x} cy={z.y} r={z.radius} color={z.color} />
+                  <Group>
+                    {/* Shadow */}
+                    <Circle cx={z.x} cy={z.y + z.radius * 0.7} r={z.radius * 0.8} color="rgba(0,0,0,0.3)" />
+                    {/* Zombie Head & Body */}
+                    <Circle cx={z.x} cy={z.y} r={z.radius} color={z.color || '#546e7a'} />
+                    {/* PvZ Classic Eyes (one big, one small) */}
+                    <Circle cx={z.x - 5} cy={z.y - 3} r={5} color="#ffffff" />
+                    <Circle cx={z.x - 5} cy={z.y - 3} r={2.5} color="#212121" />
+                    <Circle cx={z.x + 5} cy={z.y - 1} r={3.5} color="#ffffff" />
+                    <Circle cx={z.x + 5} cy={z.y - 1} r={1.8} color="#212121" />
+                    {/* Conehead Hat */}
+                    {z.type === 'conehead' && (
+                      <Group>
+                        <Rect x={z.x - 10} y={z.y - z.radius - 14} width={20} height={16} color="#ff9800" />
+                        <Rect x={z.x - 12} y={z.y - z.radius + 2} width={24} height={4} color="#f57c00" />
+                      </Group>
+                    )}
+                    {/* Buckethead Hat */}
+                    {z.type === 'buckethead' && (
+                      <Group>
+                        <Rect x={z.x - 11} y={z.y - z.radius - 15} width={22} height={17} color="#90a4ae" />
+                        <Rect x={z.x - 13} y={z.y - z.radius + 2} width={26} height={4} color="#607d8b" />
+                        <Rect x={z.x - 9} y={z.y - z.radius - 13} width={18} height={4} color="#cfd8dc" />
+                      </Group>
+                    )}
+                    {/* Runner / Football Helmet */}
+                    {z.type === 'runner' && (
+                      <Group>
+                        <Circle cx={z.x} cy={z.y - 6} r={z.radius * 0.9} color="#d32f2f" />
+                        <Rect x={z.x - 3} y={z.y - z.radius - 6} width={6} height={18} color="#ffffff" />
+                      </Group>
+                    )}
+                  </Group>
                 )}
 
                 {/* Frozen Aura */}
@@ -334,30 +366,53 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
             const skinId = player.skin || 'default';
             let bodyColor = '#66bb6a';
             let snoutColor = '#388e3c';
+            let innerMouthColor = '#1b5e20';
 
             if (skinId === 'ninja') {
               bodyColor = '#263238';
               snoutColor = '#102027';
+              innerMouthColor = '#000a12';
             } else if (skinId === 'cowboy') {
               bodyColor = '#558b2f';
               snoutColor = '#33691e';
+              innerMouthColor = '#1b3a0a';
             } else if (skinId === 'cyberpunk') {
               bodyColor = '#00e5ff';
               snoutColor = '#00b0ff';
+              innerMouthColor = '#005b9f';
             } else if (skinId === 'arctic') {
               bodyColor = '#80deea';
               snoutColor = '#4dd0e1';
+              innerMouthColor = '#006064';
             }
+
+            const recoilX = player.isCharging ? -Math.cos(player.angle) * 3 : 0;
+            const recoilY = player.isCharging ? -Math.sin(player.angle) * 3 : 0;
+
+            const px = player.x + recoilX;
+            const py = player.y + recoilY;
 
             return (
               <Group>
                 {/* Shadow */}
                 <Circle
                   cx={player.x}
-                  cy={player.y + 12}
-                  r={player.radius}
+                  cy={player.y + 14}
+                  r={player.radius * 0.95}
                   color="rgba(0,0,0,0.3)"
                 />
+
+                {/* Spawn Shield Protection Bubble */}
+                {player.spawnInvulnerableTimer > 0 && (
+                  <Circle
+                    cx={player.x}
+                    cy={player.y}
+                    r={player.radius * 1.55}
+                    color="rgba(255, 215, 0, 0.45)"
+                    style="stroke"
+                    strokeWidth={3}
+                  />
+                )}
 
                 {/* Arctic Frost Aura */}
                 {skinId === 'arctic' && (
@@ -392,14 +447,29 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
                   />
                 )}
 
-                {/* Main Body */}
-                <Circle cx={player.x} cy={player.y} r={player.radius} color={bodyColor} />
+                {/* Back Leaf (classic Peashooter tail leaf) */}
+                <Circle
+                  cx={px - Math.cos(player.angle) * 16}
+                  cy={py - Math.sin(player.angle) * 16}
+                  r={7}
+                  color={snoutColor}
+                />
+                <Circle
+                  cx={px - Math.cos(player.angle + 0.3) * 19}
+                  cy={py - Math.sin(player.angle + 0.3) * 19}
+                  r={5}
+                  color={snoutColor}
+                />
+
+                {/* Main Pea Head Body */}
+                <Circle cx={px} cy={py} r={player.radius} color={bodyColor} />
+                <Circle cx={px - 4} cy={py - 4} r={player.radius * 0.65} color="rgba(255,255,255,0.18)" />
 
                 {/* Skin Details: Ninja Headband */}
                 {skinId === 'ninja' && (
                   <Rect
-                    x={player.x - 16}
-                    y={player.y - 12}
+                    x={px - 16}
+                    y={py - 12}
                     width={32}
                     height={7}
                     color="#d32f2f"
@@ -410,15 +480,15 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
                 {skinId === 'cowboy' && (
                   <Group>
                     <Rect
-                      x={player.x - 22}
-                      y={player.y - player.radius - 6}
+                      x={px - 22}
+                      y={py - player.radius - 6}
                       width={44}
                       height={6}
                       color="#4e342e"
                     />
                     <Rect
-                      x={player.x - 14}
-                      y={player.y - player.radius - 14}
+                      x={px - 14}
+                      y={py - player.radius - 14}
                       width={28}
                       height={10}
                       color="#5d4037"
@@ -428,29 +498,69 @@ export const BattleRoyaleCanvas = ({ width, height }) => {
 
                 {/* Skin Details: Cyberpunk Core */}
                 {skinId === 'cyberpunk' && (
-                  <Circle cx={player.x} cy={player.y} r={6} color="#ff007f" />
+                  <Circle cx={px} cy={py} r={6} color="#ff007f" />
                 )}
 
-                {/* Snout pointing at player.angle */}
+                {/* Snout Cylinder pointing at player.angle */}
                 <Circle
-                  cx={player.x + Math.cos(player.angle) * 22}
-                  cy={player.y + Math.sin(player.angle) * 22}
+                  cx={px + Math.cos(player.angle) * 18}
+                  cy={py + Math.sin(player.angle) * 18}
                   r={9}
                   color={snoutColor}
                 />
-
-                {/* Eyes */}
+                {/* Snout Muzzle Ring */}
                 <Circle
-                  cx={player.x + Math.cos(player.angle - 0.5) * 12}
-                  cy={player.y + Math.sin(player.angle - 0.5) * 12}
-                  r={5}
+                  cx={px + Math.cos(player.angle) * 24}
+                  cy={py + Math.sin(player.angle) * 24}
+                  r={10}
+                  color={snoutColor}
+                />
+                {/* Snout Dark Cannon Opening where peas shoot out */}
+                <Circle
+                  cx={px + Math.cos(player.angle) * 25}
+                  cy={py + Math.sin(player.angle) * 25}
+                  r={6}
+                  color={innerMouthColor}
+                />
+
+                {/* Left Eye */}
+                <Circle
+                  cx={px + Math.cos(player.angle - 0.45) * 12}
+                  cy={py + Math.sin(player.angle - 0.45) * 12}
+                  r={5.5}
                   color="#ffffff"
                 />
                 <Circle
-                  cx={player.x + Math.cos(player.angle - 0.5) * 14}
-                  cy={player.y + Math.sin(player.angle - 0.5) * 14}
-                  r={2.5}
+                  cx={px + Math.cos(player.angle - 0.45) * 14}
+                  cy={py + Math.sin(player.angle - 0.45) * 14}
+                  r={3}
                   color="#111111"
+                />
+                <Circle
+                  cx={px + Math.cos(player.angle - 0.45) * 14.5 - 1}
+                  cy={py + Math.sin(player.angle - 0.45) * 14.5 - 1}
+                  r={1.2}
+                  color="#ffffff"
+                />
+
+                {/* Right Eye */}
+                <Circle
+                  cx={px + Math.cos(player.angle + 0.45) * 12}
+                  cy={py + Math.sin(player.angle + 0.45) * 12}
+                  r={5.5}
+                  color="#ffffff"
+                />
+                <Circle
+                  cx={px + Math.cos(player.angle + 0.45) * 14}
+                  cy={py + Math.sin(player.angle + 0.45) * 14}
+                  r={3}
+                  color="#111111"
+                />
+                <Circle
+                  cx={px + Math.cos(player.angle + 0.45) * 14.5 - 1}
+                  cy={py + Math.sin(player.angle + 0.45) * 14.5 - 1}
+                  r={1.2}
+                  color="#ffffff"
                 />
 
               </Group>

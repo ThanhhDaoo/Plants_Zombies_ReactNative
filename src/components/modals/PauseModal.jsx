@@ -48,6 +48,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     zIndex: 9999,
+    elevation: 9999,
   },
   card: {
     width: '80%',
@@ -58,6 +59,7 @@ const styles = StyleSheet.create({
     borderColor: '#4caf50',
     padding: 24,
     alignItems: 'center',
+    elevation: 10000,
   },
   title: {
     fontSize: 20,
