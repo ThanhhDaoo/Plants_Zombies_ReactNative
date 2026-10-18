@@ -46,3 +46,4 @@ yarn-error.*
 _legacy_web/
 legacy_source/android/
 legacy_source/ios/
+*.apk
