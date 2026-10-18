@@ -1,0 +1,822 @@
+/* Comprehensive Responsive System for Web & Mobile Devices */
+
+/* 1. Mobile Portrait Orientation Warning */
+#landscapeMessage {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, #1b3a1d 0%, #0d1b11 60%, #060b08 100%);
+  color: white;
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 16px;
+  font-family: 'Fredoka', sans-serif;
+}
+
+#landscapeMessage h2 {
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  font-size: 1.45em;
+  color: #ffd54f;
+  margin-bottom: 8px;
+  text-shadow: 1.5px 1.5px 0 #bf360c;
+}
+
+#landscapeMessage p {
+  font-size: 0.88em;
+  font-weight: 700;
+  margin-bottom: 16px;
+  max-width: 280px;
+  line-height: 1.4;
+  color: #c8e6c9;
+}
+
+#landscapeMessage .rotate-icon {
+  font-size: 2.6em;
+  color: #76ff03;
+  animation: rotateGuide 2s ease-in-out infinite;
+}
+
+@keyframes rotateGuide {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  #landscapeMessage {
+    display: flex;
+  }
+  #gameContainer {
+    display: none !important;
+  }
+}
+
+/* 2. Responsive Root Font Scaling for Mobile Landscape Screens */
+@media (max-height: 520px), (max-width: 950px) and (orientation: landscape) {
+  :root, html, body {
+    font-size: 12px !important;
+  }
+}
+
+@media (max-height: 400px) and (orientation: landscape) {
+  :root, html, body {
+    font-size: 11px !important;
+  }
+}
+
+@media (max-height: 340px) and (orientation: landscape) {
+  :root, html, body {
+    font-size: 10px !important;
+  }
+}
+
+/* 3. Mobile Landscape Optimized Two-Column Layout (Height <= 640px / Width <= 950px) */
+@media (max-height: 640px), (max-width: 950px) {
+  #lobbyScreen {
+    padding: 3px max(10px, env(safe-area-inset-right, 10px)) 3px max(10px, env(safe-area-inset-left, 10px)) !important;
+    overflow: hidden !important;
+    gap: 3px !important;
+  }
+
+  /* Header Bar */
+  .lobby-header {
+    padding: 2px 10px !important;
+    min-height: 32px !important;
+    max-height: 38px !important;
+    border-radius: 10px !important;
+    border-width: 2px !important;
+    box-shadow: 0 3px 0 #1a0f06 !important;
+  }
+
+  .brand-icon {
+    font-size: 1.15em !important;
+  }
+
+  .brand-title {
+    font-size: 0.9em !important;
+    letter-spacing: 0.3px !important;
+    line-height: 1.1 !important;
+  }
+
+  .brand-subtitle {
+    display: none !important; /* Save vital vertical space on mobile landscape */
+  }
+
+  .currency-badge {
+    padding: 2px 7px !important;
+    font-size: 0.78em !important;
+    border-width: 1.5px !important;
+    border-radius: 12px !important;
+    gap: 4px !important;
+    box-shadow: 0 2px 0 #0f0803 !important;
+  }
+
+  .icon-btn {
+    padding: 2px 6px !important;
+    font-size: 0.72em !important;
+    border-radius: 7px !important;
+    border-width: 1.5px !important;
+  }
+
+  /* Desktop-Only Elements Hidden on Mobile Landscape */
+  .lobby-scenery-backdrop,
+  .lobby-center-col,
+  .lobby-player-profile-card,
+  .hero-title-badge,
+  .hero-quick-attributes,
+  .quick-change-weapon-btn,
+  .btn-badge-alert,
+  .battle-pulse-ring,
+  .podium-aura {
+    display: none !important;
+  }
+
+  /* Two Column Main Layout */
+  .lobby-main-layout {
+    gap: 10px !important;
+    padding: 2px 0 !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+  }
+
+  /* Left Column (Hero & Weapon Card Side-by-Side on Mobile) */
+  .lobby-left-col {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    width: auto !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+
+  .hero-showcase-wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+  }
+
+  .hero-stage-podium {
+    width: 95px !important;
+    height: 95px !important;
+  }
+
+  .podium-ring {
+    width: 86px !important;
+    height: 28px !important;
+    bottom: 3px !important;
+    border-width: 2px !important;
+    box-shadow: 0 4px 0 #0d3810 !important;
+  }
+
+  #lobbyHeroCanvas {
+    width: 85px !important;
+    height: 85px !important;
+  }
+
+  /* Equipped Weapon Card: wide enough so "Cấp độ 1 ★" and "28 DMG" never break or wrap */
+  .equipped-weapon-card {
+    width: 205px !important;
+    max-width: 225px !important;
+    padding: 6px 10px !important;
+    border-radius: 12px !important;
+    border-width: 2px !important;
+    box-shadow: 0 3px 0 #1a0f06 !important;
+    flex-shrink: 0 !important;
+  }
+
+  .card-title-small {
+    font-size: 0.6em !important;
+    margin-bottom: 2px !important;
+  }
+
+  .weapon-title-large {
+    font-size: 0.96em !important;
+    margin-bottom: 4px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .weapon-quick-stats {
+    padding: 3px 8px !important;
+    font-size: 0.78em !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .weapon-quick-stats span,
+  .weapon-quick-stats b {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Right Column (Menu Buttons & Giant Battle Button) */
+  .lobby-right-col {
+    width: 215px !important;
+    max-width: 38% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important; /* Centered with balanced margins, never touches header */
+    gap: 5px !important;
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .lobby-menu-buttons {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    width: 100% !important;
+  }
+
+  .lobby-nav-btn {
+    padding: 5px 10px !important;
+    font-size: 0.76em !important;
+    border-radius: 9px !important;
+    border-width: 2px !important;
+    box-shadow: 0 2.5px 0 #1a0f06 !important;
+    gap: 7px !important;
+  }
+
+  .lobby-nav-btn .btn-emoji {
+    font-size: 1.05em !important;
+  }
+
+  .lobby-nav-btn .btn-text {
+    font-size: 0.95em !important;
+  }
+
+  .lobby-battle-btn {
+    padding: 6px 12px !important;
+    border-radius: 12px !important;
+    border-width: 2.5px !important;
+    box-shadow: 0 4px 0 #bf360c, 0 6px 14px rgba(230, 81, 0, 0.45) !important;
+    gap: 8px !important;
+    margin-top: 2px !important;
+  }
+
+  .battle-btn-icon {
+    font-size: 1.3em !important;
+  }
+
+  .battle-main-txt {
+    font-size: 1.05em !important;
+    line-height: 1.05 !important;
+  }
+
+  .battle-sub-txt {
+    font-size: 0.58em !important;
+    letter-spacing: 0.3px !important;
+  }
+
+  /* Armory & Upgrade Modal on Mobile Landscape */
+  .survival-modal {
+    padding: 6px max(10px, env(safe-area-inset-right, 10px)) 6px max(10px, env(safe-area-inset-left, 10px)) !important;
+  }
+
+  .armory-box {
+    width: 98% !important;
+    max-width: 780px !important;
+    max-height: 92vh !important;
+    max-height: 92dvh !important;
+    border-radius: 14px !important;
+    border-width: 2.5px !important;
+    box-shadow: 0 6px 0 #0f0803, 0 12px 30px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .armory-header {
+    padding: 4px 10px !important;
+    min-height: 36px !important;
+    border-bottom-width: 2px !important;
+  }
+
+  .armory-title-row {
+    gap: 8px !important;
+  }
+
+  .armory-title-row h3 {
+    font-size: 0.92em !important;
+    line-height: 1 !important;
+  }
+
+  .armory-title-row .currency-badge {
+    padding: 2px 6px !important;
+    font-size: 0.72em !important;
+    border-radius: 10px !important;
+  }
+
+  .armory-tabs {
+    gap: 5px !important;
+  }
+
+  .tab-btn {
+    padding: 3px 9px !important;
+    font-size: 0.74em !important;
+    border-radius: 8px !important;
+    border-width: 1.5px !important;
+  }
+
+  .close-modal-btn {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.85em !important;
+    border-width: 1.5px !important;
+  }
+
+  .armory-content {
+    padding: 6px 10px !important;
+    gap: 6px !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 clean columns on landscape mobile */
+  }
+
+  @media (max-width: 680px) {
+    .armory-content {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+
+  .armory-item-card,
+  .armory-stat-card {
+    padding: 6px 8px !important;
+    border-radius: 10px !important;
+    border-width: 2px !important;
+    box-shadow: 0 3px 0 #1a0f06 !important;
+    gap: 4px !important;
+  }
+
+  .card-header,
+  .stat-header {
+    gap: 6px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .weapon-icon,
+  .stat-icon {
+    font-size: 1.25em !important;
+  }
+
+  .weapon-meta h4,
+  .stat-header h4 {
+    font-size: 0.82em !important;
+    line-height: 1.1 !important;
+  }
+
+  .stars {
+    font-size: 0.7em !important;
+    letter-spacing: 1px !important;
+  }
+
+  .weapon-stats {
+    padding: 3px 6px !important;
+    border-radius: 7px !important;
+    margin-bottom: 3px !important;
+  }
+
+  .stat-row {
+    font-size: 0.68em !important;
+    margin: 1px 0 !important;
+  }
+
+  .weapon-desc {
+    font-size: 0.62em !important;
+    line-height: 1.2 !important;
+    margin-bottom: 4px !important;
+    min-height: 0 !important;
+    max-height: 28px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+  }
+
+  .action-btn {
+    padding: 4px 8px !important;
+    font-size: 0.72em !important;
+    border-radius: 7px !important;
+    border-width: 1.5px !important;
+    box-shadow: 0 2px 0 #0d3810 !important;
+  }
+
+  .max-badge {
+    padding: 4px !important;
+    font-size: 0.72em !important;
+    border-radius: 7px !important;
+  }
+
+  /* Guide Modal on Mobile Landscape */
+  .guide-box {
+    max-width: 760px !important;
+    width: 96% !important;
+    max-height: 92vh !important;
+    max-height: 92dvh !important;
+    border-radius: 14px !important;
+    border-width: 2.5px !important;
+  }
+
+  .guide-header {
+    padding: 4px 10px !important;
+    gap: 6px !important;
+    min-height: 32px !important;
+  }
+
+  .guide-title-row h3 {
+    font-size: 0.95em !important;
+  }
+
+  .guide-tabs {
+    padding: 2px 4px !important;
+    border-radius: 8px !important;
+    gap: 3px !important;
+  }
+
+  .guide-tab-btn {
+    padding: 3px 8px !important;
+    font-size: 0.72em !important;
+    border-radius: 6px !important;
+  }
+
+  .guide-header .close-modal-btn {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 11px !important;
+    top: 4px !important;
+    right: 6px !important;
+  }
+
+  .guide-body {
+    padding: 6px 10px !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+  }
+
+  .guide-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  #guide-zombies .guide-cards-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 5px !important;
+  }
+
+  .guide-card {
+    padding: 5px 8px !important;
+    gap: 6px !important;
+    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+  }
+
+  #guide-zombies .guide-card {
+    padding: 4px 6px !important;
+    gap: 5px !important;
+  }
+
+  .guide-card-icon {
+    font-size: 1.25em !important;
+  }
+
+  #guide-zombies .guide-card-icon {
+    font-size: 1.15em !important;
+  }
+
+  .guide-card-info h4 {
+    font-size: 0.78em !important;
+    margin-bottom: 1px !important;
+  }
+
+  #guide-zombies .guide-card-info h4 {
+    font-size: 0.72em !important;
+    margin-bottom: 1px !important;
+  }
+
+  .guide-card-info p {
+    font-size: 0.65em !important;
+    line-height: 1.2 !important;
+  }
+
+  #guide-zombies .guide-card-info p {
+    font-size: 0.6em !important;
+    line-height: 1.15 !important;
+  }
+
+  .guide-footer {
+    display: none !important;
+  }
+
+  /* Victory & Defeat GameOver Modals on Mobile Landscape */
+  .pubg-modal {
+    padding: 8px !important;
+  }
+
+  .pubg-modal-box {
+    max-width: 360px !important;
+    width: 94% !important;
+    max-height: 90vh !important;
+    max-height: 90dvh !important;
+    padding: 8px 14px !important;
+    border-radius: 14px !important;
+    border-width: 2.5px !important;
+    box-shadow: 0 5px 0 #0f0803, 0 10px 25px rgba(0, 0, 0, 0.85) !important;
+  }
+
+  .pubg-modal-box h2 {
+    font-size: 1.15em !important;
+    margin-bottom: 2px !important;
+  }
+
+  .pubg-modal-box.defeat h2 {
+    text-shadow: 1.5px 1.5px 0 #7f0000 !important;
+  }
+
+  .pubg-modal-box.victory h2 {
+    text-shadow: 1.5px 1.5px 0 #bf360c !important;
+  }
+
+  .pubg-modal-box p {
+    font-size: 0.72em !important;
+    margin-bottom: 3px !important;
+    line-height: 1.25 !important;
+  }
+
+  .pubg-stats-summary {
+    margin: 4px 0 !important;
+    padding: 4px 8px !important;
+    border-radius: 9px !important;
+    gap: 6px !important;
+  }
+
+  .pubg-stats-summary b {
+    font-size: 1.02em !important;
+  }
+
+  .pubg-stats-summary small {
+    font-size: 0.6em !important;
+  }
+
+  .modal-btn-row {
+    margin-top: 5px !important;
+    gap: 8px !important;
+  }
+
+  .modal-btn-row .modal-btn {
+    padding: 5px 12px !important;
+    font-size: 0.78em !important;
+    border-radius: 9px !important;
+    border-width: 2px !important;
+  }
+
+  /* In-Game HUD on Mobile (Ultra-Slim & Translucent) */
+  #pubgHud {
+    padding: 3px max(24px, env(safe-area-inset-right, 24px)) 2px max(24px, env(safe-area-inset-left, 24px)) !important;
+  }
+
+  .pubg-mode-badge {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .pubg-exit-btn {
+    padding: 2px 7px !important;
+    font-size: 0.72em !important;
+    border-radius: 7px !important;
+    background: rgba(211, 47, 47, 0.82) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    backdrop-filter: blur(6px) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .pubg-center-stats {
+    padding: 2px 8px !important;
+    gap: 7px !important;
+    border-radius: 9px !important;
+    border-width: 1px !important;
+    background: rgba(25, 17, 10, 0.52) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    backdrop-filter: blur(6px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .stat-pill {
+    line-height: 1.02 !important;
+  }
+
+  .stat-pill .label {
+    font-size: 0.5em !important;
+    letter-spacing: 0.2px !important;
+    margin-bottom: 0px !important;
+  }
+
+  .stat-pill .value {
+    font-size: 0.82em !important;
+    text-shadow: 1px 1px 0 #1a0f06 !important;
+  }
+
+  #pubgZoneWarning {
+    top: 32px !important;
+    padding: 3px 12px !important;
+    font-size: 0.8em !important;
+    border-radius: 10px !important;
+  }
+
+  .pubg-bottom-center-panel {
+    gap: 3px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .pubg-player-status {
+    width: 165px !important;
+    padding: 3px 8px !important;
+    gap: 2px !important;
+    border-radius: 9px !important;
+    border-width: 2px !important;
+  }
+
+  .bar-container {
+    gap: 4px !important;
+  }
+
+  .bar-label {
+    font-size: 0.8em !important;
+  }
+
+  .bar-track {
+    height: 7px !important;
+  }
+
+  .bar-value {
+    font-size: 0.7em !important;
+    min-width: 40px !important;
+  }
+
+  .pubg-joystick-zone {
+    bottom: max(22px, env(safe-area-inset-bottom, 22px)) !important;
+    left: max(32px, env(safe-area-inset-left, 32px)) !important;
+    width: 98px !important;
+    height: 98px !important;
+  }
+
+  .pubg-joystick-base {
+    width: 88px !important;
+    height: 88px !important;
+  }
+
+  .pubg-joystick-knob {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .pubg-weapon-card {
+    padding: 3px 12px !important;
+    border-radius: 11px !important;
+    margin-bottom: 3px !important;
+  }
+
+  .weapon-title {
+    font-size: 0.82em !important;
+  }
+
+  .weapon-ammo {
+    font-size: 1.02em !important;
+  }
+
+  /* Mobile Ergonomic Touch Cluster for Compact Landscape (Enlarged & Widely Spaced) */
+  .pubg-touch-actions {
+    bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+    right: max(20px, env(safe-area-inset-right, 20px)) !important;
+    width: 236px !important;
+    height: 220px !important;
+  }
+
+  .touch-btn.fire-btn {
+    right: 10px !important;
+    bottom: 10px !important;
+    width: 78px !important;
+    height: 78px !important;
+  }
+
+  .touch-btn.sub-btn {
+    width: 54px !important;
+    height: 54px !important;
+  }
+
+  .touch-btn.reload-btn {
+    right: 140px !important;
+    bottom: 14px !important;
+  }
+
+  .touch-btn.storm-btn {
+    right: 132px !important;
+    bottom: 88px !important;
+  }
+
+  .touch-btn.bomb-btn {
+    right: 74px !important;
+    bottom: 144px !important;
+  }
+
+  .touch-btn.dash-btn {
+    right: 8px !important;
+    bottom: 124px !important;
+  }
+
+  .fire-icon {
+    font-size: 1.38em !important;
+  }
+
+  .fire-label {
+    font-size: 0.78em !important;
+  }
+
+  .btn-icon {
+    font-size: 1.15em !important;
+  }
+
+  .btn-label {
+    font-size: 0.66em !important;
+  }
+
+  /* On compact screens: hide desktop keys only on pure touch devices, keep on desktop */
+  @media (hover: none), (pointer: coarse) {
+    .desktop-key,
+    .desktop-key-badge,
+    .desktop-control-hint,
+    .desktop-guide-ribbon {
+      display: none !important;
+    }
+
+    .mobile-arrow {
+      display: block !important;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .desktop-key,
+    .desktop-key-badge {
+      display: inline-flex !important;
+    }
+    .desktop-control-hint {
+      display: flex !important;
+    }
+    .desktop-guide-ribbon {
+      display: flex !important;
+      padding: 2px 8px !important;
+      font-size: 9.5px !important;
+      gap: 8px !important;
+    }
+    .mobile-arrow {
+      display: none !important;
+    }
+  }
+}
+
+/* Touchscreen devices strictly hide desktop keyboard guides */
+@media (hover: none), (pointer: coarse) {
+  .desktop-key,
+  .desktop-key-badge,
+  .desktop-control-hint,
+  .desktop-guide-ribbon {
+    display: none !important;
+  }
+
+  .mobile-arrow {
+    display: block !important;
+  }
+}
+
+/* Desktop devices with keyboard/mouse strictly show desktop keyboard badges & hints */
+@media (hover: hover) and (pointer: fine) {
+  .desktop-key,
+  .desktop-key-badge {
+    display: inline-flex !important;
+  }
+
+  .desktop-control-hint,
+  .desktop-guide-ribbon {
+    display: flex !important;
+  }
+
+  .mobile-arrow {
+    display: none !important;
+  }
+}

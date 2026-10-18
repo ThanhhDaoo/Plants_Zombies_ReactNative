@@ -1,0 +1,789 @@
+/* PvZ Battle Royale (PUBG Mode) - Authentic Comic Game HUD Styles */
+
+#pubgContainer {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #142617;
+  z-index: 500;
+  overflow: hidden;
+  user-select: none;
+  font-family: 'Fredoka', sans-serif;
+}
+
+#pubgCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Battle Royale HUD */
+#pubgHud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px max(12px, env(safe-area-inset-right, 12px)) 6px max(12px, env(safe-area-inset-left, 12px));
+  box-sizing: border-box;
+}
+
+/* Top Stats Banner - Ultra-Slim Translucent HUD */
+.pubg-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.pubg-mode-badge {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.pubg-exit-btn {
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  background: rgba(211, 47, 47, 0.82);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  border: 1.5px solid rgba(255, 138, 128, 0.6);
+  padding: 3px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8em;
+  letter-spacing: 0.4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  transition: all 0.1s ease;
+}
+
+.pubg-exit-btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.pubg-exit-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #7f0000;
+}
+
+.pubg-center-stats {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  background: rgba(28, 18, 12, 0.58);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 3px 12px;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  pointer-events: auto;
+  z-index: 5;
+}
+
+.stat-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.05;
+}
+
+.stat-pill .label {
+  font-size: 0.56em;
+  color: #ffca28;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0px;
+}
+
+.stat-pill .value {
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  font-size: 0.95em;
+  color: #fff;
+  text-shadow: 1px 1px 0 #1a0f06;
+}
+
+.stat-pill.danger .value {
+  color: #ff5252;
+}
+
+.stat-pill.gold .value {
+  color: #ffd54f;
+}
+
+.stat-pill.brain .value {
+  color: #f48fb1;
+}
+
+/* Zone Warning Alert */
+#pubgZoneWarning {
+  display: none;
+  position: absolute;
+  top: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  background: linear-gradient(180deg, #d32f2f, #b71c1c);
+  border: 3.5px solid #ffeb3b;
+  color: #fff;
+  padding: 8px 24px;
+  border-radius: 20px;
+  font-size: 1.15em;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 0 #7f0000, 0 0 30px rgba(255, 23, 68, 0.8);
+  text-shadow: 2px 2px 0 #7f0000;
+  animation: pulse-danger 0.8s infinite alternate ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes pulse-danger {
+  0% { transform: translateX(-50%) scale(1); }
+  100% { transform: translateX(-50%) scale(1.05); }
+}
+
+/* Bottom Center Combat Console (Health Bar + Weapon Card) */
+.pubg-bottom-center-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.pubg-player-status {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: linear-gradient(180deg, #4e342e 0%, #3e2723 60%, #2e1c0c 100%);
+  border: 2.5px solid #2e1c0c;
+  padding: 4px 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 0 #1a0f06, 0 6px 15px rgba(0, 0, 0, 0.5);
+  width: 195px;
+  pointer-events: auto;
+}
+
+.bar-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bar-label {
+  font-size: 0.95em;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+.bar-track {
+  flex: 1;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1.5px solid #2e1c0c;
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 0.15s ease-out;
+}
+
+.bar-fill.hp {
+  background: linear-gradient(90deg, #ff1744 0%, #ffeb3b 50%, #4caf50 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.bar-fill.armor {
+  background: linear-gradient(90deg, #ffa000 0%, #ffd54f 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.bar-value {
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  font-size: 0.78em;
+  color: #fff;
+  min-width: 52px;
+  text-align: right;
+  text-shadow: 1px 1px 0 #1a0f06;
+}
+
+/* Visible Analog Movement Joystick (Bottom-Left) */
+.pubg-joystick-zone {
+  position: absolute;
+  bottom: max(26px, env(safe-area-inset-bottom, 26px));
+  left: max(32px, env(safe-area-inset-left, 32px));
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  z-index: 50;
+}
+
+.pubg-joystick-base {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(76, 175, 80, 0.22) 0%, rgba(27, 94, 32, 0.4) 65%, rgba(0, 0, 0, 0.65) 100%);
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.25);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pubg-joystick-base.active {
+  border-color: #76ff03;
+  box-shadow: 0 0 22px rgba(118, 255, 3, 0.5), inset 0 0 10px rgba(118, 255, 3, 0.3);
+}
+
+.joystick-dir {
+  position: absolute;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.joystick-dir.up { top: 2px; left: 50%; transform: translateX(-50%); }
+.joystick-dir.down { bottom: 2px; left: 50%; transform: translateX(-50%); }
+.joystick-dir.left { left: 3px; top: 50%; transform: translateY(-50%); }
+.joystick-dir.right { right: 3px; top: 50%; transform: translateY(-50%); }
+
+/* Desktop Keycaps on Joystick */
+.desktop-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  background: rgba(18, 28, 20, 0.88);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-bottom: 2.5px solid rgba(0, 0, 0, 0.8);
+  border-radius: 5px;
+  font-family: 'Fredoka', 'Baloo 2', system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 900;
+  color: #ffd54f;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  text-shadow: 1px 1px 0 #000;
+  transition: all 0.08s ease;
+  user-select: none;
+}
+
+.mobile-arrow {
+  display: none;
+}
+
+.joystick-dir.active .desktop-key {
+  background: #4caf50;
+  border-color: #76ff03;
+  color: #fff;
+  transform: scale(1.15);
+  box-shadow: 0 0 12px #76ff03, 0 2px 0 #1b5e20;
+}
+
+.desktop-control-hint.joystick-hint-label {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 32, 22, 0.75);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #c8e6c9;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Desktop Key Badges on Action Buttons */
+.desktop-key-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #2e3c32 0%, #152219 100%);
+  border: 1.5px solid #ffe082;
+  border-bottom: 2.5px solid #b78103;
+  border-radius: 6px;
+  padding: 1px 7px;
+  min-width: 18px;
+  font-family: 'Fredoka', 'Baloo 2', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  color: #fffedb;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.65), 0 0 6px rgba(255, 235, 59, 0.35);
+  letter-spacing: 0.4px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 25;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.desktop-key-badge.fire-badge {
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-color: #ffd54f;
+  border-bottom: 2.5px solid #ff8f00;
+  background: linear-gradient(180deg, #3e2723 0%, #1c0e08 100%);
+  color: #fff8e1;
+}
+
+.pubg-joystick-knob {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #a5d6a7 0%, #43a047 60%, #1b5e20 100%);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.6);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.knob-inner-pip {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 6px #76ff03;
+}
+
+/* Bottom Bar (Centered Weapon Card & Tactical Touch Actions) */
+.pubg-bottom-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  position: relative;
+  pointer-events: none;
+  gap: 4px;
+}
+
+.desktop-guide-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(20, 32, 22, 0.68);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 3px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #dcedc8;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.desktop-guide-ribbon kbd {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: inherit;
+  font-size: 10.5px;
+  color: #ffd54f;
+  margin: 0 1px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Current Weapon Wooden Seed Card */
+.pubg-weapon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(180deg, #5d4037 0%, #4e342e 50%, #3e2723 100%);
+  border: 3.5px solid #2e1c0c;
+  padding: 6px 18px;
+  border-radius: 16px;
+  box-shadow: 0 5px 0 #1a0f06, 0 8px 18px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.weapon-title {
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  font-size: 1.05em;
+  color: #fff;
+  text-shadow: 2px 2px 0 #1a0f06;
+}
+
+.weapon-ammo {
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  font-size: 1.25em;
+  color: #ffd54f;
+  margin-top: 1px;
+  text-shadow: 2px 2px 0 #7f4b00;
+}
+
+/* Mobile Ergonomic Combat Actions Arc (Fire + Dash + Reload) */
+/* Mobile Ergonomic Combat Actions Arc Cluster (Enlarged & Widely Spaced Arc) */
+.pubg-touch-actions {
+  position: absolute;
+  bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  right: max(22px, env(safe-area-inset-right, 22px));
+  width: 250px;
+  height: 235px;
+  pointer-events: none;
+  z-index: 55;
+}
+
+.touch-btn {
+  position: absolute;
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  pointer-events: auto;
+  transition: transform 0.08s ease, filter 0.08s ease, box-shadow 0.08s ease;
+  overflow: visible;
+}
+
+/* Expanded invisible touch hit-slop so rapid thumb taps never miss */
+.touch-btn::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 50%;
+  pointer-events: auto;
+}
+
+/* Sub-action buttons base (Dash, Reload, Skills) - Enlarged for easy tapping */
+.touch-btn.sub-btn {
+  width: 58px;
+  height: 58px;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 4px 0 #1a0f06, 0 6px 14px rgba(0, 0, 0, 0.45);
+}
+
+.touch-btn.sub-btn:active {
+  transform: scale(0.92) translateY(2px);
+  box-shadow: 0 1px 0 #1a0f06;
+}
+
+/* 1. Reload Button: Left of Fire button with generous 52px clearance */
+.touch-btn.reload-btn {
+  right: 148px;
+  bottom: 16px;
+  background: linear-gradient(180deg, #29b6f6 0%, #0288d1 50%, #01579b 100%);
+  box-shadow: 0 4px 0 #003766, 0 4px 14px rgba(2, 136, 209, 0.5);
+}
+
+.touch-btn.reload-btn:active,
+.touch-btn.reload-btn.active {
+  box-shadow: 0 1px 0 #003766, 0 0 20px rgba(41, 182, 246, 0.85);
+}
+
+/* 2. Skill 1: Pea Storm 360° (Upper-left arc, comfortable 25px gap from reload) */
+.touch-btn.storm-btn {
+  right: 142px;
+  bottom: 96px;
+  background: linear-gradient(180deg, #ab47bc 0%, #8e24aa 50%, #4a148c 100%);
+  box-shadow: 0 4px 0 #31075e, 0 4px 14px rgba(156, 39, 176, 0.5);
+}
+
+.touch-btn.storm-btn:active,
+.touch-btn.storm-btn.active {
+  box-shadow: 0 1px 0 #31075e, 0 0 22px rgba(206, 147, 216, 0.9);
+}
+
+/* 3. Skill 2: Cherry Bomb (Top-left / High arc, comfortable 28px gap from storm) */
+.touch-btn.bomb-btn {
+  right: 80px;
+  bottom: 154px;
+  background: linear-gradient(180deg, #ff1744 0%, #d50000 50%, #880e4f 100%);
+  box-shadow: 0 4px 0 #5f0000, 0 4px 14px rgba(255, 23, 68, 0.5);
+}
+
+.touch-btn.bomb-btn:active,
+.touch-btn.bomb-btn.active {
+  box-shadow: 0 1px 0 #5f0000, 0 0 24px rgba(255, 64, 129, 0.9);
+}
+
+/* 4. Dash Button: Top-right arc (Comfortable 26px gap from bomb and 34px from fire) */
+.touch-btn.dash-btn {
+  right: 8px;
+  bottom: 132px;
+  background: linear-gradient(180deg, #ffa726 0%, #fb8c00 50%, #e65100 100%);
+  box-shadow: 0 4px 0 #8c3800, 0 4px 14px rgba(251, 140, 0, 0.5);
+}
+
+.touch-btn.dash-btn:active,
+.touch-btn.dash-btn.active {
+  box-shadow: 0 1px 0 #8c3800, 0 0 20px rgba(255, 167, 38, 0.85);
+}
+
+/* Primary Fire Button: Bottom-right corner thumb rest anchor (Enlarged to 82px) */
+.touch-btn.fire-btn {
+  right: 12px;
+  bottom: 12px;
+  width: 82px;
+  height: 82px;
+  background: radial-gradient(circle at 35% 35%, #ff5252 0%, #d50000 65%, #7f0000 100%);
+  border: 3.5px solid #ffe082;
+  box-shadow: 0 5px 0 #5f0000, 0 0 24px rgba(255, 23, 68, 0.75);
+}
+
+.touch-btn.fire-btn:active,
+.touch-btn.fire-btn.active {
+  transform: scale(0.93) translateY(2px);
+  box-shadow: 0 2px 0 #5f0000, 0 0 34px rgba(255, 23, 68, 0.95);
+  filter: brightness(1.2);
+}
+
+/* Cooldown overlay for skills and dash */
+.cooldown-overlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(12, 8, 6, 0.76);
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.cooldown-overlay.active {
+  display: flex;
+}
+
+.cd-text {
+  font-size: 0.82em;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000;
+  letter-spacing: -0.5px;
+}
+
+.touch-btn.on-cooldown {
+  filter: grayscale(0.4) opacity(0.85);
+  cursor: not-allowed;
+}
+
+.fire-icon {
+  font-size: 1.55em;
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
+
+.fire-label {
+  font-size: 0.88em;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-shadow: 1.5px 1.5px 0 #5f0000;
+  margin-top: 2px;
+}
+
+.btn-icon {
+  font-size: 1.25em;
+  line-height: 1;
+}
+
+.btn-label {
+  font-size: 0.72em;
+  font-weight: 800;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
+  margin-top: 1px;
+}
+
+/* Finish Modals (Defeat / Victory) */
+.pubg-modal {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(8, 14, 10, 0.9);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  backdrop-filter: blur(12px);
+  padding: 20px;
+}
+
+.pubg-modal-box {
+  background: linear-gradient(180deg, #4e342e 0%, #3e2723 60%, #2e1c0c 100%);
+  border: 4.5px solid #1a0f06;
+  border-radius: 26px;
+  padding: 28px 40px;
+  text-align: center;
+  box-shadow: 
+    0 12px 0 #0f0803,
+    0 25px 60px rgba(0, 0, 0, 0.9),
+    inset 0 2px 0 rgba(255, 255, 255, 0.25);
+  max-width: 480px;
+  width: 90%;
+  color: #fff;
+}
+
+.pubg-modal-box h2 {
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  font-size: 2.2em;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.pubg-modal-box.victory h2 {
+  color: #ffd54f;
+  text-shadow: 3px 3px 0 #bf360c, 0 0 30px rgba(255, 213, 79, 0.8);
+}
+
+.pubg-modal-box.defeat h2 {
+  color: #ff5252;
+  text-shadow: 3px 3px 0 #7f0000;
+}
+
+.pubg-stats-summary {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+  padding: 14px 10px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 16px;
+  border: 2px solid #2e1c0c;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.pubg-stats-summary b {
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  font-size: 1.5em;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.pubg-stats-summary small {
+  color: #ffca28;
+  font-size: 0.8em;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.modal-btn-row {
+  display: flex;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.modal-btn {
+  flex: 1;
+  font-family: 'Fredoka', 'Baloo 2', system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  padding: 13px 20px;
+  border-radius: 16px;
+  font-size: 1.1em;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  border: 3px solid #1a0f06;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
+  transition: all 0.1s ease;
+}
+
+.modal-btn.primary {
+  background: linear-gradient(180deg, #ffb300 0%, #f57c00 100%);
+  color: #fff;
+  box-shadow: 0 6px 0 #bf360c;
+}
+
+.modal-btn.primary:hover {
+  filter: brightness(1.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #bf360c;
+}
+
+.modal-btn.primary:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #bf360c;
+}
+
+.modal-btn.secondary {
+  background: linear-gradient(180deg, #795548 0%, #5d4037 100%);
+  color: #fff;
+  box-shadow: 0 6px 0 #2e1c0c;
+}
+
+.modal-btn.secondary:hover {
+  filter: brightness(1.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #2e1c0c;
+}
+
+.modal-btn.secondary:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #2e1c0c;
+}

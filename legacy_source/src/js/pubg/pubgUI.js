@@ -1,0 +1,1219 @@
+import { inventory, SKINS_CONFIG, PETS_CONFIG } from './pubgInventory.js';
+import { WEAPONS } from './pubgWeapons.js';
+import { startPubgGame, stopPubg } from './pubgGame.js';
+import { initAudio, toggleAudio, isAudioEnabled } from '../sound.js';
+
+export function setupSurvivalUI() {
+  renderLobbyStats();
+  setupLobbyEvents();
+  setupArmoryEvents();
+  setupZenGardenEvents();
+  setupLuckyWheelEvents();
+  setupCosmeticsEvents();
+  setupModeSwitchEvents();
+}
+
+export function renderLobbyStats() {
+  const coinsEl = document.getElementById('lobbyCoins');
+  if (coinsEl) coinsEl.textContent = inventory.getCoins();
+
+  const brainsEl = document.getElementById('lobbyBrains');
+  if (brainsEl) brainsEl.textContent = inventory.getBrains();
+
+  const highScoreEl = document.getElementById('lobbyHighScore');
+  if (highScoreEl) highScoreEl.textContent = inventory.data.highScore || 0;
+
+  const top1El = document.getElementById('lobbyTop1');
+  if (top1El) top1El.textContent = inventory.data.topRank || 0;
+
+  const totalKillsEl = document.getElementById('lobbyTotalKills');
+  if (totalKillsEl) totalKillsEl.textContent = inventory.data.totalKills || 0;
+
+  const top1CountEl = document.getElementById('lobbyTop1Count');
+  if (top1CountEl) top1CountEl.textContent = inventory.data.topRank || 0;
+
+  // Selected Weapon Showcase
+  const selectedWId = inventory.getSelectedWeapon();
+  const effW = inventory.getEffectiveWeapon(selectedWId);
+
+  const previewName = document.getElementById('lobbySelectedWeaponName');
+  if (previewName) previewName.textContent = `${effW.emoji} ${effW.name}`;
+
+  const previewLevel = document.getElementById('lobbySelectedWeaponLevel');
+  if (previewLevel) previewLevel.textContent = `Cấp độ ${effW.level} ★`;
+
+  const previewDmg = document.getElementById('lobbySelectedWeaponDmg');
+  if (previewDmg) previewDmg.textContent = `${effW.damage} DMG`;
+
+  // Hero Attributes & Level
+  const heroLvl = Math.max(1, Math.round(((inventory.data.stats?.maxHealthLevel || 1) + (inventory.data.stats?.armorLevel || 1) + (inventory.data.stats?.speedLevel || 1)) / 3));
+  const heroLvlEl = document.getElementById('lobbyHeroLevel');
+  if (heroLvlEl) heroLvlEl.textContent = heroLvl;
+
+  const hpEl = document.getElementById('lobbyHeroHp');
+  if (hpEl) hpEl.textContent = 100 + ((inventory.data.stats?.maxHealthLevel || 1) - 1) * 25;
+
+  const armorEl = document.getElementById('lobbyHeroArmor');
+  if (armorEl) armorEl.textContent = 25 + ((inventory.data.stats?.armorLevel || 1) - 1) * 20;
+
+  const speedEl = document.getElementById('lobbyHeroSpeed');
+  if (speedEl) speedEl.textContent = (4.6 + ((inventory.data.stats?.speedLevel || 1) - 1) * 0.3).toFixed(1);
+
+  // Player Rank Title
+  const rankEl = document.getElementById('lobbyPlayerRankTitle');
+  if (rankEl) {
+    const score = (inventory.data.highScore || 0) + (inventory.data.totalKills || 0) * 50;
+    if (score >= 2000) rankEl.textContent = 'Đậu Đại Tướng 5 Sao 🌟';
+    else if (score >= 1000) rankEl.textContent = 'Đậu Đặc Nhiệm Tinh Anh ⚡';
+    else if (score >= 400) rankEl.textContent = 'Đậu Biệt Kích Rừng Rậm 🌲';
+    else if (score >= 100) rankEl.textContent = 'Chiến Binh Đậu Cỏ 🛡️';
+    else rankEl.textContent = 'Tân Binh Đậu Mới Nhú 🌱';
+  }
+
+  // Draw Lobby Peashooter Hero Canvas
+  drawLobbyHeroPreview();
+  startLobbyHeroAnimation();
+}
+
+let lobbyHeroAnimId = null;
+
+export function startLobbyHeroAnimation() {
+  if (lobbyHeroAnimId) return;
+  function loop() {
+    const lobbyScreen = document.getElementById('lobbyScreen');
+    if (!lobbyScreen || lobbyScreen.style.display === 'none' || lobbyScreen.classList.contains('hidden')) {
+      lobbyHeroAnimId = null;
+      return;
+    }
+    drawLobbyHeroPreview();
+    lobbyHeroAnimId = requestAnimationFrame(loop);
+  }
+  lobbyHeroAnimId = requestAnimationFrame(loop);
+}
+
+function drawLobbyHeroPreview() {
+  const canvas = document.getElementById('lobbyHeroCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const selectedWId = inventory.getSelectedWeapon();
+  const effW = inventory.getEffectiveWeapon(selectedWId);
+
+  const t = Date.now() / 1000;
+  const cx = 76;
+  const cy = 96;
+  const r = 32;
+
+  // Gentle breathing hover & squash
+  const breathHover = Math.sin(t * 2.8) * 2;
+  const breathSquash = Math.sin(t * 2.8) * 0.02;
+  const charY = cy + breathHover;
+
+  // 1. Soft Dynamic Contact Shadow on Grass Podium
+  ctx.save();
+  const shadowR = Math.max(18, 30 - breathHover * 1.5);
+  ctx.beginPath();
+  ctx.ellipse(cx, charY + r * 0.88, shadowR, 8, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+  ctx.fill();
+  ctx.restore();
+
+  // 2. 4 Waddling/Resting Leaf Feet on Podium
+  ctx.fillStyle = '#2e7d32';
+  ctx.strokeStyle = '#1b5e20';
+  ctx.lineWidth = 2;
+  // Back feet
+  ctx.beginPath();
+  ctx.ellipse(cx - r * 0.65, charY + r * 0.7, 9, 5.5, -0.4, 0, Math.PI * 2);
+  ctx.ellipse(cx + r * 0.25, charY + r * 0.7, 9, 5.5, 0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  // Front feet
+  ctx.beginPath();
+  ctx.ellipse(cx - r * 0.35, charY + r * 0.82, 10, 6, -0.2, 0, Math.PI * 2);
+  ctx.ellipse(cx + r * 0.45, charY + r * 0.82, 10, 6, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // 3. Dual Swishing Stem Leaves (Back fins) with natural wave physics
+  const leafWave = Math.sin(t * 2.2) * 0.14;
+  ctx.save();
+  ctx.translate(cx - r * 0.78, charY);
+  ctx.rotate(leafWave);
+  ctx.fillStyle = '#388e3c';
+  ctx.strokeStyle = '#1b5e20';
+  ctx.lineWidth = 2.2;
+  // Upper leaf
+  ctx.beginPath();
+  ctx.ellipse(-8, -11, 14, 8, -0.38, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = '#81c784';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(0, -9);
+  ctx.lineTo(-14, -13);
+  ctx.stroke();
+  // Lower leaf
+  ctx.fillStyle = '#388e3c';
+  ctx.strokeStyle = '#1b5e20';
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.ellipse(-8, 11, 14, 8, 0.38, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = '#81c784';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(0, 9);
+  ctx.lineTo(-14, 13);
+  ctx.stroke();
+  ctx.restore();
+
+  // 4. Peashooter Head Body (3D Spherical Volume)
+  ctx.save();
+  ctx.translate(cx, charY);
+  ctx.scale(1 - breathSquash, 1 + breathSquash);
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  const headGrad = ctx.createRadialGradient(-r * 0.35, -r * 0.35, r * 0.12, 0, 0, r);
+  headGrad.addColorStop(0, '#a5d6a7');
+  headGrad.addColorStop(0.35, '#4caf50');
+  headGrad.addColorStop(0.8, '#2e7d32');
+  headGrad.addColorStop(1, '#1b5e20');
+  ctx.fillStyle = headGrad;
+  ctx.fill();
+  ctx.strokeStyle = '#134017';
+  ctx.lineWidth = 2.8;
+  ctx.stroke();
+
+  // Crescent Specular Highlight on forehead
+  ctx.beginPath();
+  ctx.arc(-r * 0.15, -r * 0.25, r * 0.65, Math.PI * 1.1, Math.PI * 1.6);
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  ctx.restore();
+
+  // 5. Special Ops Tactical Commando Helmet & Fluttering Red Bandana
+  ctx.save();
+  ctx.translate(cx, charY);
+  ctx.beginPath();
+  ctx.arc(-2, 0, r + 1.5, Math.PI * 0.52, Math.PI * 1.48);
+  ctx.lineTo(-r * 0.38, 0);
+  ctx.closePath();
+  const helmGrad = ctx.createLinearGradient(-r, 0, 0, 0);
+  helmGrad.addColorStop(0, '#212f24');
+  helmGrad.addColorStop(0.7, '#37473a');
+  helmGrad.addColorStop(1, '#1e2920');
+  ctx.fillStyle = helmGrad;
+  ctx.fill();
+  ctx.strokeStyle = '#141d15';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Steel rivets on helmet rim
+  ctx.fillStyle = '#cfd8dc';
+  ctx.beginPath();
+  ctx.arc(-r * 0.55, -r * 0.75, 1.8, 0, Math.PI * 2);
+  ctx.arc(-r * 0.85, 0, 1.8, 0, Math.PI * 2);
+  ctx.arc(-r * 0.55, r * 0.75, 1.8, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Fluttering Red Commando Bandana Ribbons
+  const ribbonWave = Math.sin(t * 3.5) * 5;
+  ctx.strokeStyle = '#e53935';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.moveTo(-r * 0.95, -4);
+  ctx.quadraticCurveTo(-r * 1.35, -8 + ribbonWave, -r * 1.55, -5 + ribbonWave);
+  ctx.moveTo(-r * 0.95, 3);
+  ctx.quadraticCurveTo(-r * 1.35, 7 - ribbonWave, -r * 1.6, 9 - ribbonWave);
+  ctx.stroke();
+  ctx.restore();
+
+  // 6. Weapon-Specific Snout (Heavy Barrel)
+  const snoutX = cx + r + 6;
+  // Snout Collar Sleeve
+  ctx.fillStyle = '#2e3d30';
+  ctx.fillRect(cx + r - 3, charY - 7, 9, 14);
+  ctx.strokeStyle = '#141d15';
+  ctx.lineWidth = 1.8;
+  ctx.strokeRect(cx + r - 3, charY - 7, 9, 14);
+
+  if (selectedWId === 'threepeater_shotgun') {
+    [-7, 0, 7].forEach((offsetY) => {
+      ctx.beginPath();
+      ctx.ellipse(snoutX, charY + offsetY, 9, 6.5, 0, 0, Math.PI * 2);
+      ctx.fillStyle = effW.bulletColor;
+      ctx.fill();
+      ctx.strokeStyle = '#1b5e20';
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      ctx.fillStyle = '#143517';
+      ctx.beginPath();
+      ctx.arc(snoutX + 3, charY + offsetY, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  } else if (selectedWId === 'snow_pea_sniper') {
+    ctx.beginPath();
+    ctx.ellipse(snoutX, charY, 13, 11, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#80deea';
+    ctx.fill();
+    ctx.strokeStyle = '#00838f';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    // Ice crystals
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(snoutX + 5, charY - 8);
+    ctx.lineTo(snoutX + 10, charY - 5);
+    ctx.lineTo(snoutX + 4, charY - 4);
+    ctx.moveTo(snoutX + 5, charY + 8);
+    ctx.lineTo(snoutX + 10, charY + 5);
+    ctx.lineTo(snoutX + 4, charY + 4);
+    ctx.fill();
+  } else if (selectedWId === 'fire_pea_gatling') {
+    ctx.beginPath();
+    ctx.ellipse(snoutX, charY, 14, 12, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#d84315';
+    ctx.fill();
+    ctx.strokeStyle = '#bf360c';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    // Revolving brass chambers
+    ctx.fillStyle = '#ffb300';
+    for (let c = 0; c < 4; c++) {
+      const ca = c * (Math.PI / 2) + t * 4;
+      ctx.beginPath();
+      ctx.arc(snoutX + Math.cos(ca) * 5, charY + Math.sin(ca) * 5, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (selectedWId === 'melon_bazooka') {
+    ctx.beginPath();
+    ctx.ellipse(snoutX, charY, 16, 13, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#7cb342';
+    ctx.fill();
+    ctx.strokeStyle = '#33691e';
+    ctx.lineWidth = 2.8;
+    ctx.stroke();
+    ctx.strokeStyle = '#37474f';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(snoutX - 4, charY - 13, 4, 26);
+  } else if (selectedWId === 'plasma_cannon') {
+    ctx.beginPath();
+    ctx.ellipse(snoutX, charY, 14, 12, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#7c4dff';
+    ctx.fill();
+    ctx.strokeStyle = '#b388ff';
+    ctx.lineWidth = 2.6;
+    ctx.stroke();
+    // Pulsing core
+    ctx.fillStyle = '#00e5ff';
+    ctx.beginPath();
+    ctx.arc(snoutX + 2, charY, 5 + Math.sin(t * 5) * 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Default pea pistol trumpet
+    ctx.beginPath();
+    ctx.ellipse(snoutX, charY, 13, 11, 0, 0, Math.PI * 2);
+    ctx.fillStyle = effW.bulletColor;
+    ctx.fill();
+    ctx.strokeStyle = '#1b5e20';
+    ctx.lineWidth = 2.6;
+    ctx.stroke();
+    // Inner dark cavity
+    ctx.fillStyle = '#143818';
+    ctx.beginPath();
+    ctx.arc(snoutX + 3, charY, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Glowing red laser sight dot
+  ctx.fillStyle = '#ff1744';
+  ctx.beginPath();
+  ctx.arc(snoutX + 9, charY - 6, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 7. Expressive Determined Cartoon Eyes with Natural Blinking
+  const isBlinking = (Date.now() % 3800) < 160;
+
+  if (isBlinking) {
+    ctx.strokeStyle = '#1b5e20';
+    ctx.lineWidth = 2.8;
+    ctx.beginPath();
+    ctx.arc(cx + 6, charY - 8, 6, 0.2, Math.PI - 0.2);
+    ctx.arc(cx + 6, charY + 8, 6, -Math.PI + 0.2, -0.2);
+    ctx.stroke();
+  } else {
+    // Sclera
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(cx + 5, charY - 8, 6.8, 5.8, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx + 5, charY + 8, 6.8, 5.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#134017';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    // Large pupils looking forward
+    ctx.fillStyle = '#0f1710';
+    ctx.beginPath();
+    ctx.arc(cx + 7.5, charY - 8, 3.5, 0, Math.PI * 2);
+    ctx.arc(cx + 7.5, charY + 8, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Double specular reflection shine dots
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    // Big sparkle
+    ctx.arc(cx + 7.8, charY - 9.5, 1.4, 0, Math.PI * 2);
+    ctx.arc(cx + 7.8, charY + 6.5, 1.4, 0, Math.PI * 2);
+    // Small sparkle
+    ctx.arc(cx + 9, charY - 7, 0.8, 0, Math.PI * 2);
+    ctx.arc(cx + 9, charY + 9, 0.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function setupLobbyEvents() {
+  // Start Battle Button
+  const startBtn = document.getElementById('lobbyStartBtn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      initAudio();
+      document.getElementById('lobbyScreen').style.display = 'none';
+      document.getElementById('pubgContainer').style.display = 'block';
+      startPubgGame();
+    });
+  }
+
+  // Open Armory / Tủ Đồ Button
+  const armoryBtn = document.getElementById('lobbyArmoryBtn');
+  if (armoryBtn) {
+    armoryBtn.addEventListener('click', () => {
+      initAudio();
+      openArmoryModal();
+    });
+  }
+
+  const quickArmoryBtn = document.getElementById('lobbyQuickArmoryBtn');
+  if (quickArmoryBtn) {
+    quickArmoryBtn.addEventListener('click', () => {
+      initAudio();
+      openArmoryModal();
+    });
+  }
+
+  // Open Stats / Training Button
+  const statsBtn = document.getElementById('lobbyStatsBtn');
+  if (statsBtn) {
+    statsBtn.addEventListener('click', () => {
+      initAudio();
+      openArmoryModal('stats');
+    });
+  }
+
+  // Guide Modal Controls & Tab Switching
+  const guideModal = document.getElementById('guideModal');
+  const guideBtn = document.getElementById('lobbyGuideBtn');
+  if (guideBtn && guideModal) {
+    guideBtn.addEventListener('click', () => {
+      initAudio();
+      guideModal.style.display = 'flex';
+    });
+  }
+
+  const closeGuideBtn = document.getElementById('closeGuideBtn');
+  if (closeGuideBtn && guideModal) {
+    closeGuideBtn.addEventListener('click', () => {
+      guideModal.style.display = 'none';
+    });
+  }
+
+  const closeGuideTopBtn = document.getElementById('closeGuideTopBtn');
+  if (closeGuideTopBtn && guideModal) {
+    closeGuideTopBtn.addEventListener('click', () => {
+      guideModal.style.display = 'none';
+    });
+  }
+
+  if (guideModal) {
+    guideModal.addEventListener('click', (e) => {
+      if (e.target === guideModal) {
+        guideModal.style.display = 'none';
+      }
+    });
+
+    // Wire up Guide tab switching
+    const guideTabBtns = guideModal.querySelectorAll('.guide-tab-btn');
+    guideTabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        guideTabBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const targetTabId = btn.dataset.tab;
+        guideModal.querySelectorAll('.guide-tab-content').forEach((content) => {
+          content.style.display = content.id === targetTabId ? 'block' : 'none';
+        });
+      });
+    });
+  }
+
+  // Sound Button
+  const soundBtn = document.getElementById('lobbySoundBtn');
+  if (soundBtn) {
+    soundBtn.addEventListener('click', () => {
+      const enabled = toggleAudio();
+      soundBtn.textContent = enabled ? '🔊 Bật' : '🔇 Tắt';
+      soundBtn.classList.toggle('active', enabled);
+    });
+  }
+}
+
+// Armory Modal Management
+export function openArmoryModal(activeTab = 'weapons') {
+  renderArmoryTabs(activeTab);
+  renderArmoryContent();
+  document.getElementById('armoryModal').style.display = 'flex';
+}
+
+export function closeArmoryModal() {
+  document.getElementById('armoryModal').style.display = 'none';
+  renderLobbyStats();
+}
+
+let currentArmoryTab = 'weapons';
+
+function renderArmoryTabs(tab) {
+  currentArmoryTab = tab;
+  const weaponsTabBtn = document.getElementById('tabWeaponsBtn');
+  const statsTabBtn = document.getElementById('tabStatsBtn');
+  const weaponsContent = document.getElementById('armoryWeaponsContent');
+  const statsContent = document.getElementById('armoryStatsContent');
+
+  if (tab === 'weapons') {
+    weaponsTabBtn.classList.add('active');
+    statsTabBtn.classList.remove('active');
+    weaponsContent.style.display = 'grid';
+    statsContent.style.display = 'none';
+  } else {
+    statsTabBtn.classList.add('active');
+    weaponsTabBtn.classList.remove('active');
+    weaponsContent.style.display = 'none';
+    statsContent.style.display = 'grid';
+  }
+}
+
+function renderArmoryContent() {
+  // Update header coins & brains
+  const modalCoins = document.getElementById('armoryModalCoins');
+  if (modalCoins) modalCoins.textContent = inventory.getCoins();
+
+  const modalBrains = document.getElementById('armoryModalBrains');
+  if (modalBrains) modalBrains.textContent = inventory.getBrains();
+
+  // Render Weapons
+  const weaponsContainer = document.getElementById('armoryWeaponsContent');
+  if (weaponsContainer) {
+    weaponsContainer.innerHTML = '';
+    const selectedWeapon = inventory.getSelectedWeapon();
+
+    Object.values(WEAPONS).forEach((w) => {
+      const isUnlocked = inventory.isWeaponUnlocked(w.id);
+      const isEquipped = selectedWeapon === w.id;
+      const level = inventory.getWeaponLevel(w.id);
+      const effW = inventory.getEffectiveWeapon(w.id);
+
+      const upgradeCost = w.upgradeBaseCost * level;
+      const canUnlock = inventory.getCoins() >= w.unlockCoins && inventory.getBrains() >= (w.unlockBrains || 0);
+      const canUpgrade = inventory.getCoins() >= upgradeCost && level < 5;
+
+      const card = document.createElement('div');
+      card.className = `armory-item-card ${isEquipped ? 'equipped' : ''} ${!isUnlocked ? 'locked' : ''}`;
+
+      card.innerHTML = `
+        <div class="card-header">
+          <span class="weapon-icon">${w.emoji}</span>
+          <div class="weapon-meta">
+            <h4>${w.name}</h4>
+            <div class="stars">${'★'.repeat(level)}${'☆'.repeat(5 - level)}</div>
+          </div>
+          ${isEquipped ? '<span class="equipped-badge">ĐANG DÙNG</span>' : ''}
+        </div>
+
+        <div class="weapon-stats">
+          <div class="stat-row">
+            <span>Sát Thương:</span>
+            <b>${effW.damage} DMG</b>
+          </div>
+          <div class="stat-row">
+            <span>Băng Đạn:</span>
+            <b>${effW.magazineSize} viên</b>
+          </div>
+          <div class="stat-row">
+            <span>Tốc Bắn:</span>
+            <b>${Math.round(1000 / effW.fireRate * 10) / 10} v/s</b>
+          </div>
+        </div>
+
+        <p class="weapon-desc">${w.description}</p>
+
+        <div class="card-actions">
+          ${
+            !isUnlocked
+              ? `
+            <button class="action-btn unlock ${canUnlock ? 'can-buy' : 'disabled'}" data-action="unlock" data-id="${w.id}">
+              Mở Khóa: ${w.unlockCoins}🪙 ${w.unlockBrains ? `+ ${w.unlockBrains}🧠` : ''}
+            </button>
+          `
+              : `
+            ${
+              !isEquipped
+                ? `<button class="action-btn equip" data-action="equip" data-id="${w.id}">Trang Bị</button>`
+                : ''
+            }
+            ${
+              level < 5
+                ? `
+              <button class="action-btn upgrade ${canUpgrade ? 'can-buy' : 'disabled'}" data-action="upgrade" data-id="${w.id}">
+                Nâng Cấp Lv.${level + 1} (${upgradeCost}🪙)
+              </button>
+            `
+                : '<div class="max-badge">ĐẠT CẤP TỐI ĐA MAX</div>'
+            }
+          `
+          }
+        </div>
+      `;
+
+      weaponsContainer.appendChild(card);
+    });
+  }
+
+  // Render Stats Upgrades
+  const statsContainer = document.getElementById('armoryStatsContent');
+  if (statsContainer) {
+    statsContainer.innerHTML = '';
+    const statsDef = [
+      {
+        id: 'maxHealthLevel',
+        name: 'Máu Tối Đa',
+        icon: '❤️',
+        desc: 'Tăng lượng máu tối đa, sống dai hơn trước zombie đông đúc.',
+        getValue: (lvl) => `${100 + (lvl - 1) * 25} HP`,
+        getNextValue: (lvl) => `${100 + lvl * 25} HP`,
+        cost: (lvl) => 150 * lvl
+      },
+      {
+        id: 'armorLevel',
+        name: 'Giáp Khởi Đầu',
+        icon: '🛡️',
+        desc: 'Bắt đầu ván đấu với sẵn lượng giáp chống đạn vững chắc.',
+        getValue: (lvl) => `${25 + (lvl - 1) * 20} Giáp`,
+        getNextValue: (lvl) => `${25 + lvl * 20} Giáp`,
+        cost: (lvl) => 200 * lvl
+      },
+      {
+        id: 'speedLevel',
+        name: 'Tốc Độ Di Chuyển',
+        icon: '👟',
+        desc: 'Di chuyển nhanh nhẹn để né cắn và thoát khỏi vòng bo bão điện.',
+        getValue: (lvl) => `${Math.round((4.6 + (lvl - 1) * 0.35) * 10) / 10}`,
+        getNextValue: (lvl) => `${Math.round((4.6 + lvl * 0.35) * 10) / 10}`,
+        cost: (lvl) => 250 * lvl
+      },
+      {
+        id: 'magnetLevel',
+        name: 'Nam Châm Hút Loot',
+        icon: '🧲',
+        desc: 'Tự động hút Vàng, Não và Vật phẩm từ khoảng cách cực xa!',
+        getValue: (lvl) => `${50 + (lvl - 1) * 35} px`,
+        getNextValue: (lvl) => `${50 + lvl * 35} px`,
+        cost: (lvl) => 200 * lvl
+      }
+    ];
+
+    statsDef.forEach((st) => {
+      const lvl = inventory.getStatLevel(st.id);
+      const cost = st.cost(lvl);
+      const canUpgrade = inventory.getCoins() >= cost && lvl < 5;
+
+      const card = document.createElement('div');
+      card.className = 'armory-stat-card';
+      card.innerHTML = `
+        <div class="stat-header">
+          <span class="stat-icon">${st.icon}</span>
+          <div>
+            <h4>${st.name}</h4>
+            <div class="level-indicator">Cấp ${lvl} / 5</div>
+          </div>
+        </div>
+
+        <div class="stat-progress-bar">
+          <div class="fill" style="width: ${(lvl / 5) * 100}%;"></div>
+        </div>
+
+        <div class="stat-values">
+          <span>Hiện tại: <b>${st.getValue(lvl)}</b></span>
+          ${lvl < 5 ? `<span class="next-val">-> Tiếp: <b>${st.getNextValue(lvl)}</b></span>` : ''}
+        </div>
+
+        <p class="stat-desc">${st.desc}</p>
+
+        <div class="card-actions">
+          ${
+            lvl < 5
+              ? `
+            <button class="action-btn upgrade ${canUpgrade ? 'can-buy' : 'disabled'}" data-action="upgrade-stat" data-id="${st.id}" data-cost="${cost}">
+              Nâng Cấp (+${cost}🪙)
+            </button>
+          `
+              : '<div class="max-badge">ĐÃ TỐI ĐA MAX</div>'
+          }
+        </div>
+      `;
+
+      statsContainer.appendChild(card);
+    });
+  }
+}
+
+function setupArmoryEvents() {
+  // Tab Switch
+  const tabWeaponsBtn = document.getElementById('tabWeaponsBtn');
+  if (tabWeaponsBtn) {
+    tabWeaponsBtn.addEventListener('click', () => renderArmoryTabs('weapons'));
+  }
+
+  const tabStatsBtn = document.getElementById('tabStatsBtn');
+  if (tabStatsBtn) {
+    tabStatsBtn.addEventListener('click', () => renderArmoryTabs('stats'));
+  }
+
+  // Close Armory Modal
+  const closeArmoryBtn = document.getElementById('closeArmoryBtn');
+  if (closeArmoryBtn) {
+    closeArmoryBtn.addEventListener('click', closeArmoryModal);
+  }
+
+  // Delegated clicks inside Armory Content
+  const armoryModal = document.getElementById('armoryModal');
+  if (armoryModal) {
+    armoryModal.addEventListener('click', (e) => {
+      const btn = e.target.closest('button.action-btn');
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+
+      if (action === 'equip') {
+        inventory.setSelectedWeapon(id);
+        renderArmoryContent();
+        renderLobbyStats();
+      } else if (action === 'unlock') {
+        const w = WEAPONS[id];
+        if (inventory.unlockWeapon(id, w.unlockCoins, w.unlockBrains || 0)) {
+          inventory.setSelectedWeapon(id);
+          renderArmoryContent();
+          renderLobbyStats();
+        }
+      } else if (action === 'upgrade') {
+        const w = WEAPONS[id];
+        const lvl = inventory.getWeaponLevel(id);
+        const cost = w.upgradeBaseCost * lvl;
+        if (inventory.upgradeWeapon(id, cost)) {
+          renderArmoryContent();
+          renderLobbyStats();
+        }
+      } else if (action === 'upgrade-stat') {
+        const cost = parseInt(btn.dataset.cost, 10);
+        if (inventory.upgradeStat(id, cost)) {
+          renderArmoryContent();
+          renderLobbyStats();
+        }
+      }
+    });
+  }
+}
+
+// ==========================================
+// 1. ZEN GARDEN SYSTEM (AFK REWARDS)
+// ==========================================
+function setupZenGardenEvents() {
+  const zenBtn = document.getElementById('lobbyZenBtn');
+  const zenModal = document.getElementById('zenGardenModal');
+  const closeBtn = document.getElementById('closeZenModalBtn');
+  const harvestBtn = document.getElementById('harvestZenBtn');
+
+  if (zenBtn && zenModal) {
+    zenBtn.addEventListener('click', () => {
+      initAudio();
+      renderZenGarden();
+      zenModal.style.display = 'flex';
+    });
+  }
+
+  if (closeBtn && zenModal) {
+    closeBtn.addEventListener('click', () => {
+      zenModal.style.display = 'none';
+      renderLobbyStats();
+    });
+  }
+
+  if (harvestBtn) {
+    harvestBtn.addEventListener('click', () => {
+      const res = inventory.harvestZenGarden();
+      if (res.coins > 0 || res.brains > 0) {
+        alert(`🎉 Thu hoạch thành công: +${res.coins} 🪙 và +${res.brains} 🧠!`);
+        renderZenGarden();
+        renderLobbyStats();
+      }
+    });
+  }
+}
+
+function renderZenGarden() {
+  const rewards = inventory.getZenRewards();
+  const elapsedEl = document.getElementById('zenElapsedHours');
+  if (elapsedEl) elapsedEl.textContent = `${rewards.elapsedHours} giờ`;
+
+  const coinsEl = document.getElementById('zenCoinsReward');
+  if (coinsEl) coinsEl.textContent = `+${rewards.coins} Xu`;
+
+  const brainsEl = document.getElementById('zenBrainsReward');
+  if (brainsEl) brainsEl.textContent = `+${rewards.brains} Não`;
+
+  const container = document.getElementById('zenPlotsContainer');
+  if (!container) return;
+
+  const zg = inventory.data.zenGarden;
+  container.innerHTML = '';
+
+  zg.plots.forEach((plot, idx) => {
+    const upgradeCost = plot.level * 120;
+    const canUpgrade = plot.level < 5 && inventory.getCoins() >= upgradeCost;
+
+    const div = document.createElement('div');
+    div.style.cssText = 'background: rgba(10,30,20,0.7); border: 1px solid rgba(76,175,80,0.3); border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 10px;';
+    div.innerHTML = `
+      <div style="width: 44px; height: 44px; border-radius: 22px; background: rgba(76,175,80,0.25); border: 1px solid #4caf50; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+        ${plot.emoji}
+      </div>
+      <div style="flex: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <b style="font-size: 13px; color: #fff;">${plot.name}</b>
+          <span style="background: #388e3c; border-radius: 6px; padding: 1px 6px; font-size: 10px; font-weight: bold;">Cấp ${plot.level}/5</span>
+        </div>
+        <div style="font-size: 11px; color: #a5d6a7; margin: 3px 0;">
+          +${plot.coinRate * plot.level} 🪙/h ${plot.brainRate > 0 ? `• +${(plot.brainRate * plot.level).toFixed(1)} 🧠/h` : ''}
+        </div>
+        <button class="zen-upgrade-btn" data-index="${idx}" style="background: ${canUpgrade ? '#4caf50' : '#424242'}; border: none; padding: 4px 10px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: bold; cursor: ${canUpgrade ? 'pointer' : 'not-allowed'}; opacity: ${canUpgrade ? '1' : '0.6'};">
+          ${plot.level >= 5 ? '★ TỐI ĐA' : `Nâng Cấp: ${upgradeCost} 🪙`}
+        </button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  container.querySelectorAll('.zen-upgrade-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.index, 10);
+      if (inventory.upgradeZenPlot(idx)) {
+        renderZenGarden();
+        renderLobbyStats();
+      }
+    });
+  });
+}
+
+// ==========================================
+// 2. LUCKY WHEEL SYSTEM (ROULETTE)
+// ==========================================
+let isWheelSpinning = false;
+let currentWheelAngle = 0;
+
+function setupLuckyWheelEvents() {
+  const spinBtn = document.getElementById('lobbySpinBtn');
+  const wheelModal = document.getElementById('luckyWheelModal');
+  const closeBtn = document.getElementById('closeWheelModalBtn');
+  const spinActionBtn = document.getElementById('spinWheelBtn');
+
+  if (spinBtn && wheelModal) {
+    spinBtn.addEventListener('click', () => {
+      initAudio();
+      renderLuckyWheel();
+      wheelModal.style.display = 'flex';
+    });
+  }
+
+  if (closeBtn && wheelModal) {
+    closeBtn.addEventListener('click', () => {
+      if (isWheelSpinning) return;
+      wheelModal.style.display = 'none';
+      renderLobbyStats();
+    });
+  }
+
+  if (spinActionBtn) {
+    spinActionBtn.addEventListener('click', () => {
+      if (isWheelSpinning) return;
+      const isFree = inventory.canFreeSpin();
+      if (!isFree && inventory.getCoins() < 80) {
+        alert('Bạn không đủ 80 Xu để quay!');
+        return;
+      }
+
+      if (!isFree) {
+        inventory.data.coins -= 80;
+        inventory.saveData();
+      }
+
+      isWheelSpinning = true;
+      document.getElementById('wheelPrizeNotice').style.display = 'none';
+      spinActionBtn.disabled = true;
+      spinActionBtn.textContent = 'ĐANG QUAY...';
+
+      const { prize, index } = inventory.spinLuckyWheel();
+      const sliceAngle = 360 / 8;
+      const targetSliceCenter = index * sliceAngle;
+      const extraRounds = 5 * 360;
+      const targetAngle = currentWheelAngle + extraRounds + (360 - (targetSliceCenter % 360));
+
+      const disk = document.getElementById('webWheelDisk');
+      if (disk) {
+        disk.style.transform = `rotate(${targetAngle}deg)`;
+      }
+
+      setTimeout(() => {
+        currentWheelAngle = targetAngle % 360;
+        isWheelSpinning = false;
+        spinActionBtn.disabled = false;
+
+        document.getElementById('wheelWonTxt').textContent = `${prize.text} ${prize.emoji}`;
+        document.getElementById('wheelPrizeNotice').style.display = 'block';
+
+        renderLuckyWheel();
+        renderLobbyStats();
+      }, 4000);
+    });
+  }
+}
+
+function drawWheelCanvas() {
+  const canvas = document.getElementById('webWheelCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx = 110, cy = 110, r = 110;
+  const PRIZES = [
+    { text: '100 Xu', color: '#ffb300', emoji: '🪙' },
+    { text: '2 Não', color: '#ec407a', emoji: '🧠' },
+    { text: '250 Xu', color: '#ffa000', emoji: '🪙' },
+    { text: '50 Xu', color: '#ffe082', emoji: '🪙' },
+    { text: '500 Xu VIP', color: '#ff6f00', emoji: '💰' },
+    { text: '5 Não VIP', color: '#ab47bc', emoji: '🧠' },
+    { text: '150 Xu', color: '#ffca28', emoji: '🪙' },
+    { text: '3 Não', color: '#f06292', emoji: '🧠' },
+  ];
+  const arc = (Math.PI * 2) / PRIZES.length;
+  ctx.clearRect(0, 0, 220, 220);
+
+  for (let i = 0; i < PRIZES.length; i++) {
+    const angle = i * arc - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, angle, angle + arc);
+    ctx.closePath();
+    ctx.fillStyle = PRIZES[i].color;
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle + arc / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 4;
+    ctx.font = 'bold 10px sans-serif';
+    ctx.fillText(`${PRIZES[i].text}`, r - 12, 4);
+    ctx.restore();
+  }
+}
+
+function renderLuckyWheel() {
+  drawWheelCanvas();
+
+  const coinsTxt = document.getElementById('wheelCoinsTxt');
+  if (coinsTxt) coinsTxt.textContent = `${inventory.getCoins()} 🪙`;
+
+  const brainsTxt = document.getElementById('wheelBrainsTxt');
+  if (brainsTxt) brainsTxt.textContent = `${inventory.getBrains()} 🧠`;
+
+  const isFree = inventory.canFreeSpin();
+  const statusTxt = document.getElementById('wheelStatusTxt');
+  const spinBtn = document.getElementById('spinWheelBtn');
+
+  if (statusTxt) {
+    statusTxt.textContent = isFree
+      ? '✨ LƯỢT QUAY MIỄN PHÍ ĐANG SẴN SÀNG!'
+      : 'Chi phí quay: 80 Xu';
+  }
+
+  if (spinBtn && !isWheelSpinning) {
+    spinBtn.textContent = isFree ? 'QUAY MIỄN PHÍ 🎁' : 'QUAY NGAY (80 🪙)';
+  }
+}
+
+// ==========================================
+// 3. COSMETICS & PETS SYSTEM
+// ==========================================
+let activeCosmeticTab = 'skins';
+
+function setupCosmeticsEvents() {
+  const cosmBtn = document.getElementById('lobbyCosmeticsBtn');
+  const cosmModal = document.getElementById('cosmeticsModal');
+  const closeBtn = document.getElementById('closeCosmeticsModalBtn');
+  const tabSkins = document.getElementById('tabSkinsBtn');
+  const tabPets = document.getElementById('tabPetsBtn');
+
+  if (cosmBtn && cosmModal) {
+    cosmBtn.addEventListener('click', () => {
+      initAudio();
+      renderCosmetics();
+      cosmModal.style.display = 'flex';
+    });
+  }
+
+  if (closeBtn && cosmModal) {
+    closeBtn.addEventListener('click', () => {
+      cosmModal.style.display = 'none';
+      renderLobbyStats();
+    });
+  }
+
+  if (tabSkins && tabPets) {
+    tabSkins.addEventListener('click', () => {
+      activeCosmeticTab = 'skins';
+      tabSkins.style.background = '#3949ab';
+      tabSkins.style.borderColor = '#7986cb';
+      tabSkins.style.color = '#fff';
+      tabPets.style.background = 'rgba(255,255,255,0.06)';
+      tabPets.style.borderColor = 'rgba(255,255,255,0.1)';
+      tabPets.style.color = '#9fa8da';
+      renderCosmetics();
+    });
+
+    tabPets.addEventListener('click', () => {
+      activeCosmeticTab = 'pets';
+      tabPets.style.background = '#ff8f00';
+      tabPets.style.borderColor = '#ffb300';
+      tabPets.style.color = '#fff';
+      tabSkins.style.background = 'rgba(255,255,255,0.06)';
+      tabSkins.style.borderColor = 'rgba(255,255,255,0.1)';
+      tabSkins.style.color = '#9fa8da';
+      renderCosmetics();
+    });
+  }
+}
+
+function renderCosmetics() {
+  const container = document.getElementById('cosmeticsCardsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const coins = inventory.getCoins();
+
+  if (activeCosmeticTab === 'skins') {
+    Object.values(SKINS_CONFIG).forEach((skin) => {
+      const isUnlocked = inventory.data.unlockedSkins.includes(skin.id);
+      const isEquipped = inventory.data.selectedSkin === skin.id;
+      const canAfford = coins >= skin.cost;
+
+      const card = document.createElement('div');
+      card.style.cssText = `background: rgba(20,30,50,0.7); border: 1.5px solid ${isEquipped ? '#4caf50' : 'rgba(63,81,181,0.3)'}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;`;
+      card.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <div style="width: 44px; height: 44px; border-radius: 22px; background: rgba(63,81,181,0.25); border: 1px solid #5c6bc0; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+            ${skin.emoji}
+          </div>
+          <div>
+            <b style="color: #fff; font-size: 13px;">${skin.name}</b>
+            <div style="color: #90caf9; font-size: 10px; margin-top: 2px;">${skin.desc}</div>
+          </div>
+        </div>
+        <div>
+          ${isEquipped
+            ? '<button style="width: 100%; background: #388e3c; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: 900; font-size: 11px;">✓ ĐANG DÙNG</button>'
+            : isUnlocked
+            ? `<button class="skin-equip-btn" data-id="${skin.id}" style="width: 100%; background: #1e88e5; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 11px; cursor: pointer;">TRANG BỊ</button>`
+            : `<button class="skin-buy-btn" data-id="${skin.id}" style="width: 100%; background: ${canAfford ? '#ff9800' : '#424242'}; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 11px; cursor: ${canAfford ? 'pointer' : 'not-allowed'};">MỞ KHÓA (${skin.cost} 🪙)</button>`
+          }
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    container.querySelectorAll('.skin-equip-btn').forEach((b) => {
+      b.addEventListener('click', () => {
+        inventory.selectSkin(b.dataset.id);
+        renderCosmetics();
+        renderLobbyStats();
+      });
+    });
+
+    container.querySelectorAll('.skin-buy-btn').forEach((b) => {
+      b.addEventListener('click', () => {
+        if (inventory.unlockSkin(b.dataset.id)) {
+          renderCosmetics();
+          renderLobbyStats();
+        }
+      });
+    });
+  } else {
+    // Pets
+    Object.values(PETS_CONFIG).forEach((pet) => {
+      const isUnlocked = inventory.data.unlockedPets.includes(pet.id);
+      const isEquipped = inventory.data.selectedPet === pet.id;
+      const canAfford = coins >= pet.cost;
+
+      const card = document.createElement('div');
+      card.style.cssText = `background: rgba(20,30,50,0.7); border: 1.5px solid ${isEquipped ? '#4caf50' : 'rgba(255,179,0,0.3)'}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;`;
+      card.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <div style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,179,0,0.25); border: 1px solid #ffb300; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+            ${pet.emoji}
+          </div>
+          <div>
+            <b style="color: #fff; font-size: 13px;">${pet.name}</b>
+            <div style="color: #ffe082; font-size: 10px; margin-top: 2px;">${pet.desc}</div>
+          </div>
+        </div>
+        <div>
+          ${isEquipped
+            ? `<button class="pet-unequip-btn" style="width: 100%; background: #558b2f; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 10px; cursor: pointer;">✓ ĐANG DÙNG (BỎ CHỌN)</button>`
+            : isUnlocked
+            ? `<button class="pet-equip-btn" data-id="${pet.id}" style="width: 100%; background: #1e88e5; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 11px; cursor: pointer;">ĐỒNG HÀNH</button>`
+            : `<button class="pet-buy-btn" data-id="${pet.id}" style="width: 100%; background: ${canAfford ? '#ff9800' : '#424242'}; border: none; padding: 7px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 11px; cursor: ${canAfford ? 'pointer' : 'not-allowed'};">MỞ KHÓA (${pet.cost} 🪙)</button>`
+          }
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    container.querySelectorAll('.pet-equip-btn').forEach((b) => {
+      b.addEventListener('click', () => {
+        inventory.selectPet(b.dataset.id);
+        renderCosmetics();
+        renderLobbyStats();
+      });
+    });
+
+    container.querySelectorAll('.pet-unequip-btn').forEach((b) => {
+      b.addEventListener('click', () => {
+        inventory.selectPet(null);
+        renderCosmetics();
+        renderLobbyStats();
+      });
+    });
+
+    container.querySelectorAll('.pet-buy-btn').forEach((b) => {
+      b.addEventListener('click', () => {
+        if (inventory.unlockPet(b.dataset.id)) {
+          renderCosmetics();
+          renderLobbyStats();
+        }
+      });
+    });
+  }
+}
+
+// ==========================================
+// 4. GAME MODE SWITCHER
+// ==========================================
+function setupModeSwitchEvents() {
+  const brBtn = document.getElementById('modeBattleRoyaleBtn');
+  const bossBtn = document.getElementById('modeBossRaidBtn');
+  const startBtn = document.getElementById('lobbyStartBtn');
+  const startIcon = document.getElementById('lobbyStartIcon');
+  const startMainTxt = document.getElementById('lobbyStartMainTxt');
+  const startSubTxt = document.getElementById('lobbyStartSubTxt');
+
+  if (brBtn && bossBtn) {
+    brBtn.addEventListener('click', () => {
+      inventory.setGameMode('battle_royale');
+      brBtn.style.background = '#2e7d32';
+      brBtn.style.borderColor = '#4caf50';
+      brBtn.style.color = '#fff';
+      bossBtn.style.background = 'rgba(106, 27, 154, 0.4)';
+      bossBtn.style.borderColor = '#ab47bc';
+      bossBtn.style.color = '#ce93d8';
+
+      if (startBtn) startBtn.style.background = 'linear-gradient(135deg, #ff9800, #f57c00)';
+      if (startIcon) startIcon.textContent = '⚔️';
+      if (startMainTxt) startMainTxt.textContent = 'VÀO TRẬN CHIẾN';
+      if (startSubTxt) startSubTxt.textContent = 'BẮT ĐẦU SINH TỒN (32 AI)';
+    });
+
+    bossBtn.addEventListener('click', () => {
+      inventory.setGameMode('boss_raid');
+      bossBtn.style.background = '#7b1fa2';
+      bossBtn.style.borderColor = '#ba68c8';
+      bossBtn.style.color = '#fff';
+      brBtn.style.background = 'rgba(46, 125, 50, 0.4)';
+      brBtn.style.borderColor = '#4caf50';
+      brBtn.style.color = '#a5d6a7';
+
+      if (startBtn) startBtn.style.background = 'linear-gradient(135deg, #9c27b0, #6a1b9a)';
+      if (startIcon) startIcon.textContent = '👹';
+      if (startMainTxt) startMainTxt.textContent = 'KHIÊU CHIẾN ZOMBOSS';
+      if (startSubTxt) startSubTxt.textContent = 'ĐẠI CHIẾN MECH TITAN';
+    });
+  }
+}
+
+// ==========================================
+// 5. ROGUELIKE PERK MUTATION MODAL
+// ==========================================
+export function showWebPerkModal(choices, onChoose) {
+  const modal = document.getElementById('pubgPerkModal');
+  const row = document.getElementById('perkCardsRow');
+  if (!modal || !row) return;
+
+  row.innerHTML = '';
+  choices.forEach((perk) => {
+    const card = document.createElement('div');
+    card.style.cssText = `
+      flex: 1; min-width: 170px; max-width: 220px;
+      background: linear-gradient(180deg, #1b381e, #0e2012);
+      border: 2.5px solid ${perk.color || '#4caf50'};
+      border-radius: 18px; padding: 18px 14px; text-align: center;
+      cursor: pointer; transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    `;
+    card.innerHTML = `
+      <div style="font-size: 40px; margin-bottom: 8px;">${perk.icon}</div>
+      <div style="font-size: 15px; font-weight: 900; color: #fff; margin-bottom: 6px;">${perk.name}</div>
+      <div style="font-size: 11px; color: ${perk.color || '#a5d6a7'}; font-weight: 800; margin-bottom: 8px; letter-spacing: 0.5px;">★ ${perk.tier || 'CƯỜNG HÓA'} ★</div>
+      <div style="font-size: 12px; color: #c8e6c9; line-height: 1.4; min-height: 48px;">${perk.desc}</div>
+      <button style="margin-top: 14px; width: 100%; padding: 10px; border-radius: 10px; border: none; background: #4caf50; color: #fff; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 3px 10px rgba(76,175,80,0.4);">CHỌN NGAY</button>
+    `;
+    card.onmouseenter = () => {
+      card.style.transform = 'translateY(-6px) scale(1.04)';
+      card.style.boxShadow = `0 8px 25px ${perk.color || '#4caf50'}`;
+    };
+    card.onmouseleave = () => {
+      card.style.transform = 'none';
+      card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
+    };
+    card.onclick = () => {
+      modal.style.display = 'none';
+      if (onChoose) onChoose(perk);
+    };
+    row.appendChild(card);
+  });
+
+  modal.style.display = 'flex';
+}

@@ -44,4 +44,5 @@ yarn-error.*
 .idea/
 .vercel/
 _legacy_web/
-legacy_source/
+legacy_source/android/
+legacy_source/ios/
