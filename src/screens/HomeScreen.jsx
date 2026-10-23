@@ -7,6 +7,7 @@ import {
   ImageBackground,
   ScrollView,
   Modal,
+  Image,
 } from 'react-native';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { WEAPONS } from '../game/config/pubgWeapons';
@@ -58,7 +59,11 @@ export const HomeScreen = ({ onStartGame }) => {
         {/* Top Header Bar */}
         <View style={styles.header}>
           <View style={styles.titleBox}>
-            <Text style={styles.titleIcon}>🌱</Text>
+            <Image
+              source={require('../../assets/icon.png')}
+              style={styles.titleLogo}
+              resizeMode="contain"
+            />
             <View>
               <Text style={styles.mainTitle}>PLANTS VS ZOMBIES</Text>
               <Text style={styles.subTitle}>BATTLE ROYALE • CHIẾN TRƯỜNG SINH TỒN</Text>
@@ -432,8 +437,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  titleIcon: {
-    fontSize: 28,
+  titleLogo: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#ffd54f',
   },
   mainTitle: {
     fontSize: 18,

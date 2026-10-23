@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Text,
   AppState,
+  Image,
 } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -33,6 +34,12 @@ const INJECTED_FULLSCREEN_JS = `
         gc.style.boxShadow = 'none';
         gc.style.border = 'none';
         gc.style.margin = '0px';
+      }
+      var brandIcon = document.querySelector('.brand-icon');
+      if (brandIcon && !brandIcon.querySelector('img')) {
+        brandIcon.innerHTML = '<img src="/icon-192.png" alt="Logo" style="width:34px;height:34px;border-radius:8px;border:1.5px solid #ffd54f;box-shadow:0 0 10px rgba(255,213,79,0.5);vertical-align:middle;object-fit:cover;display:inline-block;" />';
+        brandIcon.style.display = 'inline-flex';
+        brandIcon.style.alignItems = 'center';
       }
     } catch(e) {}
   })();
@@ -112,7 +119,12 @@ export default function App() {
       />
       {loading && (
         <View style={styles.loadingContainer} pointerEvents="none">
-          <ActivityIndicator size="large" color="#ffd54f" />
+          <Image
+            source={require('./assets/icon.png')}
+            style={styles.loadingLogo}
+            resizeMode="contain"
+          />
+          <ActivityIndicator size="large" color="#ffd54f" style={{ marginTop: 14 }} />
           <Text style={styles.loadingText}>Đang tải Chiến Trường Sinh Tồn...</Text>
         </View>
       )}
@@ -134,6 +146,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#0c140d',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingLogo: {
+    width: 90,
+    height: 90,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#ffd54f',
+    shadowColor: '#ffd54f',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
   },
   loadingText: {
     color: '#a5d6a7',
